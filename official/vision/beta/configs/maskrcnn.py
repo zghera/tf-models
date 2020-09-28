@@ -41,10 +41,16 @@ class TfExampleDecoderLabelMap(hyperparams.Config):
 
 
 @dataclasses.dataclass
+class TfdsExampleDecoder(hyperparams.Config):
+  regenerate_source_id: bool = False
+
+
+@dataclasses.dataclass
 class DataDecoder(hyperparams.OneOfConfig):
   type: Optional[str] = 'simple_decoder'
   simple_decoder: TfExampleDecoder = TfExampleDecoder()
   label_map_decoder: TfExampleDecoderLabelMap = TfExampleDecoderLabelMap()
+  tfds_decoder: TfdsExampleDecoder = TfdsExampleDecoder()
 
 
 @dataclasses.dataclass
