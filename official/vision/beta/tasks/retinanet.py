@@ -25,6 +25,7 @@ from official.vision.beta.configs import retinanet as exp_cfg
 from official.vision.beta.dataloaders import retinanet_input
 from official.vision.beta.dataloaders import tf_example_decoder
 from official.vision.beta.dataloaders import tf_example_label_map_decoder
+from official.vision.beta.dataloaders import tfds_coco_example_decoder
 from official.vision.beta.evaluation import coco_evaluator
 from official.vision.beta.modeling import factory
 
@@ -91,6 +92,9 @@ class RetinaNetTask(base_task.Task):
       decoder = tf_example_label_map_decoder.TfExampleDecoderLabelMap(
           label_map=decoder_cfg.label_map,
           regenerate_source_id=decoder_cfg.regenerate_source_id)
+    elif params.decoder.type == 'tfds_decoder':
+      decoder = tfds_coco_example_decoder.TfdsExampleDecoder(
+          regenerate_source_id=decoder_cfg.regenerate_source_id)
     else:
       raise ValueError('Unknown decoder type: {}!'.format(params.decoder.type))
     decoder_cfg = params.decoder.get()
@@ -100,6 +104,9 @@ class RetinaNetTask(base_task.Task):
     elif params.decoder.type == 'label_map_decoder':
       decoder = tf_example_decoder.TfExampleDecoderLabelMap(
           label_map=decoder_cfg.label_map,
+          regenerate_source_id=decoder_cfg.regenerate_source_id)
+    elif params.decoder.type == 'tfds_decoder':
+      decoder = tfds_coco_example_decoder.TfdsExampleDecoder(
           regenerate_source_id=decoder_cfg.regenerate_source_id)
     else:
       raise ValueError('Unknown decoder type: {}!'.format(params.decoder.type))

@@ -24,6 +24,7 @@ from official.vision.beta.configs import maskrcnn as exp_cfg
 from official.vision.beta.dataloaders import maskrcnn_input
 from official.vision.beta.dataloaders import tf_example_decoder
 from official.vision.beta.dataloaders import tf_example_label_map_decoder
+from official.vision.beta.dataloaders import tfds_coco_example_decoder
 from official.vision.beta.evaluation import coco_evaluator
 from official.vision.beta.losses import maskrcnn_losses
 from official.vision.beta.modeling import factory
@@ -91,6 +92,10 @@ class MaskRCNNTask(base_task.Task):
     elif params.decoder.type == 'label_map_decoder':
       decoder = tf_example_label_map_decoder.TfExampleDecoderLabelMap(
           label_map=decoder_cfg.label_map,
+          include_mask=self._task_config.model.include_mask,
+          regenerate_source_id=decoder_cfg.regenerate_source_id)
+    elif params.decoder.type == 'tfds_decoder':
+      decoder = tfds_coco_example_decoder.TfdsExampleDecoder(
           include_mask=self._task_config.model.include_mask,
           regenerate_source_id=decoder_cfg.regenerate_source_id)
     else:
