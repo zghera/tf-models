@@ -13,28 +13,26 @@ task:
   losses:
     l2_weight_decay: 0.0001
   train_data:
-    # input_path: 'coco/train*'
     input_path: Null
     tfds_name: 'coco'
     tfds_split: 'train'
     tfds_download: True
     is_training: True
-    global_batch_size: 64
+    global_batch_size: 2
     dtype: 'float16'
-    cycle_length: !!int 10
+    cycle_length: 10
     decoder:
       type: tfds_decoder
     shuffle_buffer_size: 100
   validation_data:
-    # input_path: 'coco/val*'
     input_path: Null
     tfds_name: 'coco'
     tfds_split: 'validation'
     tfds_download: True
     is_training: False
-    global_batch_size: 8
+    global_batch_size: 2
     dtype: 'float16'
-    # cycle_length: 10
+    cycle_length: 10
     decoder:
       type: tfds_decoder
     shuffle_buffer_size: 100
@@ -56,6 +54,7 @@ trainer:
         initial_learning_rate: 0.28
         decay_steps: 1000
         alpha: 0.01
+# Stepwise version
 #    learning_rate:
 #      type: 'stepwise'
 #      stepwise:
