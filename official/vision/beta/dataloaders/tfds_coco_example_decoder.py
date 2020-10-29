@@ -52,14 +52,20 @@ class TfdsExampleDecoder(decoder.Decoder):
     return parsed_tensors['objects']['label']
 
   def _decode_areas(self, parsed_tensors):
-    return parsed_tensors['objects']['area']
+    ymin = parsed_tensors['objects']['bbox'][0]
+    xmin = parsed_tensors['objects']['bbox'][1]
+    ymax = parsed_tensors['objects']['bbox'][2]
+    xmax = parsed_tensors['objects']['bbox'][3]
+    shape = tf.cast(tf.shape(parsed_tensors['image']), tf.float32)
+    width = shape[0]
+    height = shape[1]
+    print(ymin, xmin, ymax, xmax, width, height)
+    return (ymax - ymin) * (xmax - xmin) * width * height
+    # return parsed_tensors['objects']['area']
 
   def _decode_masks(self, parsed_tensors):
     """Decode a set of PNG masks to the tf.float32 tensors."""
     return
-
-  def _decode_width(self, parsed_tensors):
-    return 
 
   def decode(self, serialized_example):
     """Decode the serialized example.
@@ -111,12 +117,13 @@ class TfdsExampleDecoder(decoder.Decoder):
     decoded_tensors = {
         'source_id': source_id,
         'image': image,
-        'height': tf.shape(parsed_tensors['image'])[0],
-        'width': tf.shape(parsed_tensors['image'])[1],
+        'width': tf.shape(parsed_tensors['image'])[0],
+        'height': tf.shape(parsed_tensors['image'])[1],
         'groundtruth_classes': classes,
         'groundtruth_is_crowd': is_crowds,
         'groundtruth_area': areas,
         'groundtruth_boxes': boxes,
     }
+    tf.print(decoded_tensors)
     return decoded_tensors
 
