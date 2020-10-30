@@ -52,14 +52,13 @@ class TfdsExampleDecoder(decoder.Decoder):
     return parsed_tensors['objects']['label']
 
   def _decode_areas(self, parsed_tensors):
-    ymin = parsed_tensors['objects']['bbox'][0]
-    xmin = parsed_tensors['objects']['bbox'][1]
-    ymax = parsed_tensors['objects']['bbox'][2]
-    xmax = parsed_tensors['objects']['bbox'][3]
+    ymin = parsed_tensors['objects']['bbox'][..., 0]
+    xmin = parsed_tensors['objects']['bbox'][..., 1]
+    ymax = parsed_tensors['objects']['bbox'][..., 2]
+    xmax = parsed_tensors['objects']['bbox'][..., 3]
     shape = tf.cast(tf.shape(parsed_tensors['image']), tf.float32)
     width = shape[0]
     height = shape[1]
-    print(ymin, xmin, ymax, xmax, width, height)
     return (ymax - ymin) * (xmax - xmin) * width * height
     # return parsed_tensors['objects']['area']
 
@@ -124,6 +123,6 @@ class TfdsExampleDecoder(decoder.Decoder):
         'groundtruth_area': areas,
         'groundtruth_boxes': boxes,
     }
-    tf.print(decoded_tensors)
+    #tf.print(decoded_tensors)
     return decoded_tensors
 
