@@ -158,7 +158,7 @@ COCO_VAL_EXAMPLES = 5000
 @exp_factory.register_config_factory('retinanet_resnetfpn_coco')
 def retinanet_resnetfpn_coco() -> cfg.ExperimentConfig:
   """COCO object detection with RetinaNet."""
-  train_batch_size = 256
+  train_batch_size = 16 
   eval_batch_size = 8
   steps_per_epoch = COCO_TRIAN_EXAMPLES // train_batch_size
 
