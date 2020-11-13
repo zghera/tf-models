@@ -94,7 +94,7 @@ class Parser(parser.Parser):
             do_scale = tf.greater(tf.random.uniform([], minval=0, maxval=1, seed=self._seed), 1 - self._pct_rand)
             if do_scale:
                 randscale = tf.random.uniform([],
-                                            minval=10,
+                                            minval=8,
                                             maxval=21,
                                             seed=self._seed,
                                             dtype=tf.int32)
