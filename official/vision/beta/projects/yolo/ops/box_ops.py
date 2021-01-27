@@ -111,13 +111,14 @@ def compute_iou(box1, box2, yxyx=False):
   """Calculates the intersection of union between box1 and box2.
 
     Args:
-      box1: a `Tensor` whose shape is [..., 4] and represents the coordinates of boxes in
-        x_center, y_center, width, height.
-      box2: a `Tensor` whose shape is [..., 4] and represents the coordinates of boxes in
-        x_center, y_center, width, height.
+      box1: a `Tensor` whose shape is [..., 4] and represents the coordinates of
+        boxes in x_center, y_center, width, height.
+      box2: a `Tensor` whose shape is [..., 4] and represents the coordinates of
+        boxes in x_center, y_center, width, height.
 
     Returns:
-        iou: a `Tensor` whose shape is [...] and value represents the intersection over union.
+      iou: a `Tensor` whose shape is [...] and value represents the
+        intersection over union.
 
     Raises:
       ValueError: If the last dimension of either box1 or box2 is not 4.
@@ -151,13 +152,14 @@ def compute_giou(box1, box2):
   """Calculates the generalized intersection of union between box1 and box2.
 
     Args:
-      box1: a `Tensor` whose shape is [..., 4] and represents the coordinates of boxes in
-        x_center, y_center, width, height.
-      box2: a `Tensor` whose shape is [..., 4] and represents the coordinates of boxes in
-        x_center, y_center, width, height.
+      box1: a `Tensor` whose shape is [..., 4] and represents the coordinates of
+        boxes in x_center, y_center, width, height.
+      box2: a `Tensor` whose shape is [..., 4] and represents the coordinates of
+        boxes in x_center, y_center, width, height.
 
     Returns:
-      iou: a `Tensor` whose shape is [...] and value represents the generalized intersection over union.
+      iou: a `Tensor` whose shape is [...] and value represents the generalized
+        intersection over union.
 
     Raises:
       ValueError: If the last dimension of either box1 or box2 is not 4.
@@ -197,13 +199,14 @@ def compute_diou(box1, box2):
   """Calculates the distance intersection of union between box1 and box2.
 
     Args:
-      box1: a `Tensor` whose shape is [..., 4] and represents the coordinates of boxes in
-        x_center, y_center, width, height.
-      box2: a `Tensor` whose shape is [..., 4] and represents the coordinates of boxes in
-        x_center, y_center, width, height.
+      box1: a `Tensor` whose shape is [..., 4] and represents the coordinates of
+        boxes in x_center, y_center, width, height.
+      box2: a `Tensor` whose shape is [..., 4] and represents the coordinates of
+        boxes in x_center, y_center, width, height.
 
     Returns:
-      iou: a `Tensor` whose shape is [...] and value represents the distance intersection over union.
+      iou: a `Tensor` whose shape is [...] and value represents the distance
+        intersection over union.
 
     Raises:
       ValueError: If the last dimension of either box1 or box2 is not 4.
@@ -247,13 +250,14 @@ def compute_ciou(box1, box2):
   """Calculates the complete intersection of union between box1 and box2.
 
     Args:
-      box1: a `Tensor` whose shape is [..., 4] and represents the coordinates of boxes in
-        x_center, y_center, width, height.
-      box2: a `Tensor` whose shape is [..., 4] and represents the coordinates of boxes in
-        x_center, y_center, width, height.
+      box1: a `Tensor` whose shape is [..., 4] and represents the coordinates of
+        boxes in x_center, y_center, width, height.
+      box2: a `Tensor` whose shape is [..., 4] and represents the coordinates of
+        boxes in x_center, y_center, width, height.
 
     Returns:
-      iou: a `Tensor` whose shape is [...] and value represents the complete intersection over union.
+      iou: a `Tensor` whose shape is [...] and value represents the complete
+        intersection over union.
 
     Raises:
       ValueError: If the last dimension of either box1 or box2 is not 4.

@@ -1,3 +1,5 @@
+"""Tensorflow decoder for the MS COCO dataset."""
+
 import tensorflow as tf
 from official.vision.beta.dataloaders import decoder
 

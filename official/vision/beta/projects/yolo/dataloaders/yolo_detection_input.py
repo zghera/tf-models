@@ -11,7 +11,8 @@ from official.vision.beta.projects.yolo.ops import box_ops as yolo_box_ops
 
 
 class Parser(parser.Parser):
-  """Parser to parse an image and its annotations into a dictionary of tensors."""
+  """ Parser to parse an image and its annotations into a dictionary of tensors.
+  """
 
   def __init__(self,
                output_size,
@@ -42,13 +43,16 @@ class Parser(parser.Parser):
       jitter_im: a `float` representing a pixel value that is the maximum jitter
         applied to the image for data augmentation during training.
       jitter_boxes: a `float` representing a pixel value that is the maximum
-        jitter applied to the bounding box for data augmentation during training.
+        jitter applied to the bounding box for data augmentation during
+        training.
       net_down_scale: an `int` that down scales the image width and height to
         the closest multiple of net_down_scale.
       max_process_size: an `int` for maximum image width and height.
       min_process_size: an `int` for minimum image width and height ,
-      max_num_instances: an `int` number of maximum number of instances in an image.
-      random_flip: a `bool` if True, augment training with random horizontal flip.
+      max_num_instances: an `int` number of maximum number of instances in an
+        image.
+      random_flip: a `bool` if True, augment training with random horizontal
+        flip.
       masks: a `Tensor`, `List` or `numpy.ndarray` for anchor masks.
       aug_rand_saturation: `bool`, if True, augment training with random
         saturation.
@@ -60,8 +64,8 @@ class Parser(parser.Parser):
         hue.
       anchors: a `Tensor`, `List` or `numpy.ndarrray` for bounding box priors.
       seed: an `int` for the seed used by tf.random
-      dtype: a `tf.dtypes.DType` object that represents the dtype the outputs will
-        be casted to. The available types are tf.float32, tf.float16, or
+      dtype: a `tf.dtypes.DType` object that represents the dtype the outputs
+        will be casted to. The available types are tf.float32, tf.float16, or
         tf.bfloat16.
     """
     self._net_down_scale = 2**max_level
@@ -297,4 +301,5 @@ class Parser(parser.Parser):
     return image, label
 
   def postprocess_fn(self, is_training=True):
-    return self._postprocess_fn if not self._fixed_size and is_training else None
+    return self._postprocess_fn if not self._fixed_size and is_training else \
+        None
