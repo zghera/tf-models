@@ -1517,8 +1517,11 @@ class DarkRouteProcess(tf.keras.layers.Layer):
     return x1
 
   def build(self, input_shape):
-    dark_conv_args = {
+    _dark_conv_args = {
         'activation': self._activation,
+    }
+
+    _args = {
         'kernel_initializer': self._kernel_initializer,
         'bias_initializer': self._bias_initializer,
         'bias_regularizer': self._bias_regularizer,
@@ -1527,8 +1530,10 @@ class DarkRouteProcess(tf.keras.layers.Layer):
         'norm_epsilon': self._norm_epsilon,
         'kernel_regularizer': self._kernel_regularizer,
         'leaky_alpha': self._leaky_alpha,
+        'subdivisions': self._subdivisions,
     }
 
+    _dark_conv_args.update(_args)
     csp = False
     self.layers = []
     for layer in self.layer_list:
