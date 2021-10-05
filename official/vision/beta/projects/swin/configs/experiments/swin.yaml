@@ -22,8 +22,9 @@ task:
       activation: 'gelu'
   losses:
     l2_weight_decay: 0.00
-    one_hot: true
-    label_smoothing: 0.1
+    one_hot: false
+    label_smoothing: 0.0
+    soft_labels: true
   train_data:
     tfds_name: imagenet2012
     tfds_data_dir: 'gs://cam2-datasets/tensorflow_datasets'

@@ -23,22 +23,23 @@ task:
       activation: 'gelu'
   losses:
     l2_weight_decay: 0.00
-    one_hot: true
+    one_hot: false
     label_smoothing: 0.0
+    soft_labels: true
   train_data:
     tfds_name: imagenet2012
     tfds_data_dir: '/media/vbanna/DATA_SHARE/CV/datasets/tensorflow/'
     tfds_split: train
     is_training: true
     global_batch_size: 1
-    dtype: 'float16'
+    dtype: 'float32'
   validation_data:
     tfds_name: imagenet2012
     tfds_data_dir: '/media/vbanna/DATA_SHARE/CV/datasets/tensorflow/'
     tfds_split: validation
     is_training: false
     global_batch_size: 50
-    dtype: 'float16'
+    dtype: 'float32'
     drop_remainder: true
   init_checkpoint: '../checkpoints/loaded_swin/loaded_swin_ckpt'
   init_checkpoint_modules: 'all'

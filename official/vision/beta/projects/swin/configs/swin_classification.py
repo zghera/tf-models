@@ -56,10 +56,8 @@ def swin_classification() -> cfg.ExperimentConfig:
             is_training=True, 
             random_erasing=common.RandomErasing(),
             mixup_and_cutmix=common.MixupAndCutmix(),
-            aug_type=common.Augmentation(
-              type = 'randaug',
-              randaug = common.RandAugment()
-          ))),
+            aug_type=common.Augmentation(type = 'randaug',randaug = common.RandAugment()))
+            ),
       trainer=cfg.TrainerConfig(),
       restrictions=[
           'task.train_data.is_training != None',
