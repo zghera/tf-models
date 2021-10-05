@@ -90,7 +90,7 @@ class RandomErasing(hyperparams.Config):
 class MixupAndCutmix(hyperparams.Config):
   """Configuration for MixupAndCutmix."""
   mixup_alpha: float = .8
-  cutmix_alpha: float = 1.
+  cutmix_alpha: float = 1.0
   prob: float = 1.0
   switch_prob: float = 0.5
   label_smoothing: float = 0.1

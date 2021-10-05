@@ -62,7 +62,8 @@ class ImageClassificationTask(base_task.Task):
 
     # Restoring checkpoint.
     if self.task_config.init_checkpoint_modules == 'all':
-      ckpt = tf.train.Checkpoint(model=model)
+      # ckpt = tf.train.Checkpoint(model=model)
+      ckpt = tf.train.Checkpoint(model)
       status = ckpt.read(ckpt_dir_or_file)
       status.expect_partial().assert_existing_objects_matched()
     elif self.task_config.init_checkpoint_modules == 'backbone':
