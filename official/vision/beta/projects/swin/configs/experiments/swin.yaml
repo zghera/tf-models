@@ -31,14 +31,14 @@ task:
     tfds_split: train
     is_training: true
     global_batch_size: 1024
-    dtype: 'bfloat16'
+    dtype: 'float32'
   validation_data:
     tfds_name: imagenet2012
     tfds_data_dir: 'gs://cam2-datasets/tensorflow_datasets'
     tfds_split: validation
     is_training: false
     global_batch_size: 1024
-    dtype: 'bfloat16'
+    dtype: 'float32'
     drop_remainder: true
 trainer:
   train_steps: 351563  # epochs: 120

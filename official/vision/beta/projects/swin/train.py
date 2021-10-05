@@ -30,7 +30,7 @@ from official.vision.beta.projects.swin.common import registry_imports  # pylint
 FLAGS = flags.FLAGS
 
 '''
-python3.8 -m official.vision.beta.projects.swin.train --mode=eval --experiment=swin_classification --model_dir=training_dir --config_file=official/vision/beta/projects/swin/configs/experiments/swin-gpu.yaml
+python3.8 -m official.vision.beta.projects.swin.train --mode=train_and_eval --experiment=swin_classification --model_dir=training_dir --config_file=official/vision/beta/projects/swin/configs/experiments/swin.yaml
 '''
 
 
