@@ -11,14 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Currrent Questions
-1. Should I be setting the default values for the head based on what they use
-   in shapenet/config/config.py or one of the actual configs like
-   configs/shapenet/voxmesh_R50.yaml
-2. I am not sure what the correct kernel initializer is, based on this post
-https://discuss.pytorch.org/t/crossentropyloss-expected-object-of-type-torch-longtensor/28683/6?u=ptrblck
-   I think it is HeNormal but I could be wrong.
-3. It looks like Pytorch impl uses something called group normalization
+"""Mesh R-CNN Heads.
+
+TODO(zghera): Remove questions below once complete.
+
+Currrent Questions
+1. This question is probably resolved as the PyTorch Impl manually sets
+   weights and biases for each conv layer. See sectioned off comments below for
+   the original question.
+   That being said, I would still appreciate if someone double checked my
+   weight & bias initializations.
+   vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+   I am not sure what the correct kernel and bias initializers are for the
+   default pytorch conv2d layers. Looking in the PyTorch source (see
+   https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/conv.py#L144)
+   It looks like they are actually using a RandomUniform initialization of the
+   weights with a specific range based on the GitHub comment (see
+   https://github.com/pytorch/pytorch/commit/8130f2f67ada1951ee27e55b8a506d6de23c13df )
+   and the biases are with some variation of HEUniform where
+   `limit = sqrt(1 / fan_in)` rather than 6 (see
+   https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/conv.py#L146 ).
+   Please correct me if I am wrong here.
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2. It looks like Pytorch impl uses something called group normalization
 https://github.com/facebookresearch/meshrcnn/blob/main/shapenet/config/config.py#L30
 https://github.com/facebookresearch/detectron2/blob/cbbc1ce26473cb2a5cc8f58e8ada9ae14cb41052/detectron2/layers/batch_norm.py#L141
    I added a flag in __init__ to use this. But my question is should this layer
@@ -28,10 +43,9 @@ https://github.com/facebookresearch/detectron2/blob/cbbc1ce26473cb2a5cc8f58e8ada
    go before ReLU so that is what I did. But please correct me if I am wrong
    here.
 """
-from typing import Any, Optional
+from typing import Optional
 
 import tensorflow as tf  # type: ignore
-
 import tensorflow_addons as tfa  # type: ignore
 
 
@@ -39,62 +53,82 @@ class VoxelHead(tf.keras.layers.Layer):
   """Mesh R-CNN Voxel Branch Prediction Head."""
 
   def __init__(self,
-               input_channels: int,
-               voxel_size: int = 28,
-               conv_dims: int = 256,
-               num_conv: int = 0,
-               use_group_norm: bool = False,
+               voxel_depth: int,
+               conv_dims: int,
+               num_conv: int,
+               use_group_norm: bool,
+               predict_classes: bool,
+               bilinearly_upscale_input: bool,
+               class_based_voxel: bool,
+               num_classes: int,
                norm_momentum: float = 0.99,
                norm_epsilon: float = 0.001,
-               kernel_initializer: str = 'HeNormal',
                kernel_regularizer:
                Optional[tf.keras.regularizers.Regularizer] = None,
-               bias_regularizer:
+               conv_bias_regularizer:
                Optional[tf.keras.regularizers.Regularizer] = None,
                **kwargs):
     """Initializes a Voxel Branch Prediction Head.
     Args:
-      input_channels: Number of channels in layer preceeding the voxel head.
-        This the final conv5_3 layer of the backbone network for ShapeNet
-        model and the RoIAlign layer following the RPN for Pix3D.
-      voxel_size: The number of depth channels for the predicted voxels.
+      voxel_depth: The number of depth channels for the predicted voxels.
       conv_dims: Number of output features for each Conv2D layer in the
         Voxel head.
       num_conv: Number of Conv2D layers prior to the Conv2DTranspose layer.
-      use_group_norm: Whether or not to use GropNormalization in fully
-        connected layer(s).
+      use_group_norm: Whether or not to use GropNormalization in the fully
+        connected layers.
+      predict_classes: Whether or not to reshape the final predictor output
+        from (N, CD, H, W) to (N, C, D, H, W) where C is `num_classes` to
+        predict and D is `voxel_depth`. This option is used by the Pix3D
+        Mesh R-CNN architecture.
+      bilinearly_upscale_input: Whether or not to bilinearly resize the voxel
+        head input tensor such that width and height of feature maps are equal
+        to (`voxel_depth` // 2). This option is used by the ShapeNet Mesh R-CNN
+        architecture.
+      class_based_voxel: Whether or predict one of `num_classes` for each voxel
+        grid output. If `predict_classes` is True but `class_based_voxel` is
+        False, we will only predict 1 class. This option is used by the Pix3d
+        Mesh R-CNN architecture.
+      num_classes: If `class_based_voxel` is predict one of `num_classes`
+        classes for each voxel. This option is used by the Pix3d Mesh R-CNN
+        architecture.
       norm_momentum: Normalization momentum for the moving average.
       norm_epsilon: Small float added to variance to avoid dividing by zero.
-      kernel_initializer: kernel_initializer for convolutional layers.
-      kernel_regularizer: tf.keras.regularizers.Regularizer object for Conv2D.
-      bias_regularizer: tf.keras.regularizers.Regularizer object for Conv2d.
-      **kwargs: keyword arguments to be passed.
+      kernel_regularizer: Convolutional layer weight regularizer object.
+      conv_bias_regularizer: Convolutional layer bias regularizer object.
+      **kwargs: other keyword arguments to be passed.
     """
     super().__init__(**kwargs)
 
-    assert self.voxel_size % 2 == 0
-
-    self._input_channels = input_channels
-    self._voxel_size = voxel_size
+    self._voxel_depth = voxel_depth
     self._conv_dims = conv_dims
     self._num_conv = num_conv
     self._use_group_norm = use_group_norm
+    self._predict_classes = predict_classes
+    self._bilinearly_upscale_input = bilinearly_upscale_input
+    self._num_classes = num_classes if (
+        predict_classes and class_based_voxel) else 1
 
     self._base_config = dict(
         activation=None,  # Apply ReLU separately in case we want to use GroupNorm
         norm_momentum=norm_momentum,
         norm_epsilon=norm_epsilon,
-        kernel_initializer=kernel_initializer,
+        kernel_initializer=None, # Set individually for each layer conv layer type
+        bias_initializer=None,
         kernel_regularizer=kernel_regularizer,
-        bias_regularizer=bias_regularizer)
+        bias_regularizer=conv_bias_regularizer)
 
+    self._conv_initializers = dict(
+        kernel_initializer=tf.keras.initializers.VarianceScaling(
+            scale=2, mode='fan_out', distribution='untruncated_normal'), # HeNormal with fan out
+        bias_initializer=None if self._use_group_norm else 'zeros'
+    )
     self._fully_conv2d_config = dict(
         filters=self._conv_dims,
         kernel_size=(3, 3),
         strides=(1, 1),
         padding=1,
         use_bias=not self._use_group_norm,
-        data_format='channels_last',
+        **self._conv_initializers,
         **self._base_config)
 
     self._deconv2d_config = dict(
@@ -103,24 +137,32 @@ class VoxelHead(tf.keras.layers.Layer):
         strides=(2, 2),
         padding=0,
         use_bias=True,
+        **self._conv_initializers,
         **self._base_config)
     self._deconv2d_config['activation'] = 'relu'
 
     self._predict_conv2d_config = dict(
-        filters=self._voxel_size,
+        filters=self._num_classes * self._voxel_depth,
         kernel_size=(1, 1),
         strides=(1, 1),
         padding=0,
         use_bias=True,
+        kernel_initializer=tf.keras.initializers.RandomNormal(stddev=0.001),
+        bias_initializer=tf.keras.initializers.Zeros(),
         **self._base_config)
 
-  def build(self, input_shape: Any) -> None:
-    """TODO(zghera)
+  def build(self, input_shape: tf.TensorShape) -> None:
+    """Creates the voxel head layers and initializes their weights and biases.
+    Args:
+      input_shape: Shape of the input tensor to the voxel head.
+        This the shape of the final layer of the backbone network for the
+        ShapeNet model and the RoIAlign layer following the RPN for Pix3D.
     """
-    #pylint: disable=unused-argument, missing-param-doc
-    self._interpolate = tf.keras.layers.UpSampling2D(
-        size=(self._voxel_size // 2, self._voxel_size // 2),
-        interpolation="bilinear")
+    #pylint: disable=unused-argument
+    vd = self._voxel_depth
+    self._interpolate = tf.keras.layers.Resizing(
+        height=(vd // 2), width=(vd // 2), interpolation='bilinear')
+    self._reshape = tf.keras.layers.Reshape((self._num_classes, vd, vd, vd))
 
     self._conv2d_norm_relu_layers = []
     for _ in range(self._num_conv):
@@ -135,30 +177,36 @@ class VoxelHead(tf.keras.layers.Layer):
     self._deconv = tf.keras.layers.Conv2DTranspose(**self._deconv2d_config)
     self._predictor = tf.keras.layers.Conv2D(**self._predict_conv2d_config)
 
-    # TODO(zghera): Weight and bias initializations
-
-  def call(self, inputs: Any) -> Any:
-    """TODO(zghera)
+  def call(self, inputs: tf.Tensor) -> tf.Tensor:
+    """Forward pass of the voxel head for the ShapeNet Mesh R-CNN model.
     Args:
-      inputs: ...
-    Return:
-      ...
+      inputs: This is the tensor output of the final layer of the backbone
+        network for the ShapeNet model and the RoIAlign layer following the
+        RPN for Pix3D.
+    Returns:
+      (N, V, V, V) for ShapeNet model and (N, C, V, V, V) for Pix3D model
+      where N = batch size, V = `voxel_depth`, and C = `num_classes`.
     """
-    # pylint: disable=arguments-differ
-    x = self._interpolate(inputs)
+    x = tf.cond(self._bilinearly_upscale_input,
+                true_fn=lambda: self._interpolate(inputs),
+                false_fn=lambda: tf.keras.layers.Lambda(lambda x: x)(inputs))
     for layer in self._conv2d_norm_relu_layers:
       x = layer(x)
     x = self._deconv(x)
-    return self._predictor(x)
+    x = self._predictor(x)
+    x = tf.cond(self._predict_classes,
+                true_fn=lambda: self._reshape(x),
+                false_fn=lambda: tf.keras.layers.Lambda(lambda x: x)(inputs))
+    return x
 
   @property
   def output_depth(self) -> int:
-    return self._voxel_size
+    return self._voxel_depth
 
   def get_config(self) -> dict:
     config = dict(
         input_channels=self._input_channels,
-        voxel_size=self._voxel_size,
+        voxel_depth=self._voxel_depth,
         conv_dims=self._conv_dims,
         num_conv=self._num_conv,
         use_group_norm=self._use_group_norm,
