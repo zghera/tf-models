@@ -16,24 +16,7 @@
 TODO(zghera): Remove questions below once complete.
 
 Currrent Questions
-1. This question is probably resolved as the PyTorch Impl manually sets
-   weights and biases for each conv layer. See sectioned off comments below for
-   the original question.
-   That being said, I would still appreciate if someone double checked my
-   weight & bias initializations.
-   vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-   I am not sure what the correct kernel and bias initializers are for the
-   default pytorch conv2d layers. Looking in the PyTorch source (see
-   https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/conv.py#L144)
-   It looks like they are actually using a RandomUniform initialization of the
-   weights with a specific range based on the GitHub comment (see
-   https://github.com/pytorch/pytorch/commit/8130f2f67ada1951ee27e55b8a506d6de23c13df )
-   and the biases are with some variation of HEUniform where
-   `limit = sqrt(1 / fan_in)` rather than 6 (see
-   https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/conv.py#L146 ).
-   Please correct me if I am wrong here.
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-2. It looks like Pytorch impl uses something called group normalization
+1. It looks like Pytorch impl uses something called group normalization
 https://github.com/facebookresearch/meshrcnn/blob/main/shapenet/config/config.py#L30
 https://github.com/facebookresearch/detectron2/blob/cbbc1ce26473cb2a5cc8f58e8ada9ae14cb41052/detectron2/layers/batch_norm.py#L141
    I added a flag in __init__ to use this. But my question is should this layer
@@ -42,6 +25,13 @@ https://github.com/facebookresearch/detectron2/blob/cbbc1ce26473cb2a5cc8f58e8ada
    what I read about BatchNorm, if GroupNorm behaves similarly then it should
    go before ReLU so that is what I did. But please correct me if I am wrong
    here.
+2. The PyTorch implementation using a padding of 1 for the initial conv2d
+   layers. But it appears that tensorflow only provides the options same and
+   valid. So if my understanding is correct, if we use a kernel size of 3, then
+   there are cases where 1 padding will not be the same as 'same' padding
+   (e.g. 22 x 22).
+3. Is it okay to not write argument docs for my tests as they are the same
+   as the voxel head arguments?
 """
 from typing import Optional
 
@@ -61,11 +51,11 @@ class VoxelHead(tf.keras.layers.Layer):
                bilinearly_upscale_input: bool,
                class_based_voxel: bool,
                num_classes: int,
-               norm_momentum: float = 0.99,
-               norm_epsilon: float = 0.001,
                kernel_regularizer:
                Optional[tf.keras.regularizers.Regularizer] = None,
                conv_bias_regularizer:
+               Optional[tf.keras.regularizers.Regularizer] = None,
+               conv_activ_regularizer:
                Optional[tf.keras.regularizers.Regularizer] = None,
                **kwargs):
     """Initializes a Voxel Branch Prediction Head.
@@ -91,10 +81,9 @@ class VoxelHead(tf.keras.layers.Layer):
       num_classes: If `class_based_voxel` is predict one of `num_classes`
         classes for each voxel. This option is used by the Pix3d Mesh R-CNN
         architecture.
-      norm_momentum: Normalization momentum for the moving average.
-      norm_epsilon: Small float added to variance to avoid dividing by zero.
       kernel_regularizer: Convolutional layer weight regularizer object.
       conv_bias_regularizer: Convolutional layer bias regularizer object.
+      conv_activ_regularizer: Convolutional layer activation regularizer object.
       **kwargs: other keyword arguments to be passed.
     """
     super().__init__(**kwargs)
@@ -110,34 +99,32 @@ class VoxelHead(tf.keras.layers.Layer):
 
     self._base_config = dict(
         activation=None,  # Apply ReLU separately in case we want to use GroupNorm
-        norm_momentum=norm_momentum,
-        norm_epsilon=norm_epsilon,
-        kernel_initializer=None, # Set individually for each layer conv layer type
-        bias_initializer=None,
         kernel_regularizer=kernel_regularizer,
-        bias_regularizer=conv_bias_regularizer)
+        bias_regularizer=conv_bias_regularizer,
+        activity_regularizer=conv_activ_regularizer)
 
-    self._conv_initializers = dict(
+    self._non_predictor_initializers = dict(
         kernel_initializer=tf.keras.initializers.VarianceScaling(
             scale=2, mode='fan_out', distribution='untruncated_normal'), # HeNormal with fan out
         bias_initializer=None if self._use_group_norm else 'zeros'
     )
+
     self._fully_conv2d_config = dict(
         filters=self._conv_dims,
         kernel_size=(3, 3),
         strides=(1, 1),
-        padding=1,
+        padding='same',
         use_bias=not self._use_group_norm,
-        **self._conv_initializers,
+        **self._non_predictor_initializers,
         **self._base_config)
 
     self._deconv2d_config = dict(
         filters=self._conv_dims,
         kernel_size=(2, 2),
         strides=(2, 2),
-        padding=0,
+        padding='valid',
         use_bias=True,
-        **self._conv_initializers,
+        **self._non_predictor_initializers,
         **self._base_config)
     self._deconv2d_config['activation'] = 'relu'
 
@@ -145,7 +132,7 @@ class VoxelHead(tf.keras.layers.Layer):
         filters=self._num_classes * self._voxel_depth,
         kernel_size=(1, 1),
         strides=(1, 1),
-        padding=0,
+        padding='valid',
         use_bias=True,
         kernel_initializer=tf.keras.initializers.RandomNormal(stddev=0.001),
         bias_initializer=tf.keras.initializers.Zeros(),
@@ -196,7 +183,7 @@ class VoxelHead(tf.keras.layers.Layer):
     x = self._predictor(x)
     x = tf.cond(self._predict_classes,
                 true_fn=lambda: self._reshape(x),
-                false_fn=lambda: tf.keras.layers.Lambda(lambda x: x)(inputs))
+                false_fn=lambda: tf.keras.layers.Lambda(lambda x: x)(x))
     return x
 
   @property
