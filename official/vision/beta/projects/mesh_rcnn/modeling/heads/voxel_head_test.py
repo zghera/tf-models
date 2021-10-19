@@ -114,6 +114,42 @@ class VoxelHeadTest(parameterized.TestCase, tf.test.TestCase):
 
     self.assertAllEqual(head.get_config(), deserialized.get_config())
 
+  def test_gradient_pass_though(self,
+                            predict_classes: bool,
+                            class_based_voxel: bool,
+                            num_conv: int,
+                            voxel_depth: int,
+                            batch_size: int,
+                            num_input_channels: int) -> None:
+    """Ensure the gradients of the layer are not None."""
+    # pylint: disable=missing-param-doc
+    tf.keras.backend.set_image_data_format('channels_last')
+    head = voxel_head.VoxelHead(voxel_depth, self._conv_dims, num_conv,
+                                self._use_group_norm, predict_classes,
+                                not predict_classes, class_based_voxel,
+                                self._num_classes)
+    loss = tf.keras.losses.MeanSquaredError()
+    optimizer = tf.keras.optimizers.SGD()
+
+    input_shape = self._get_input_shape(voxel_depth, batch_size,
+                                        num_input_channels)
+    output_shape = self._get_expected_out_shape(predict_classes,
+                                                  class_based_voxel,
+                                                  voxel_depth, batch_size)
+    init = tf.random_normal_initializer()
+    x = tf.Variable(initial_value=init(shape=input_shape, dtype=tf.float32))
+    y = tf.Variable(initial_value=init(shape=output_shape, dtype=tf.float32))
+
+    with tf.GradientTape() as tape:
+      x_hat = head(x)
+      grad_loss = loss(x_hat, y)
+    grad = tape.gradient(grad_loss, head.trainable_variables)
+    optimizer.apply_gradients(zip(grad, head.trainable_variables))
+
+    self.assertNotIn(None, grad)
+
+
+
 if __name__ == '__main__':
   # from mesh_rcnn.utils.run_utils import prep_gpu
   # prep_gpu()
