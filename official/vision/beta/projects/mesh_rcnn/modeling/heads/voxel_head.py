@@ -11,28 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Mesh R-CNN Heads.
-
-TODO(zghera): Remove questions below once complete.
-
-Currrent Questions
-1. It looks like Pytorch impl uses something called group normalization
-https://github.com/facebookresearch/meshrcnn/blob/main/shapenet/config/config.py#L30
-https://github.com/facebookresearch/detectron2/blob/cbbc1ce26473cb2a5cc8f58e8ada9ae14cb41052/detectron2/layers/batch_norm.py#L141
-   I added a flag in __init__ to use this. But my question is should this layer
-   be placed before or after the ReLU layer since there is no way to directly
-   add this as an option to the Conv2d layer like they do in Pytorch? Based on
-   what I read about BatchNorm, if GroupNorm behaves similarly then it should
-   go before ReLU so that is what I did. But please correct me if I am wrong
-   here.
-2. The PyTorch implementation using a padding of 1 for the initial conv2d
-   layers. But it appears that tensorflow only provides the options same and
-   valid. So if my understanding is correct, if we use a kernel size of 3, then
-   there are cases where 1 padding will not be the same as 'same' padding
-   (e.g. 22 x 22).
-3. Is it okay to not write argument docs for my tests as they are the same
-   as the voxel head arguments?
-"""
+"""Mesh R-CNN Heads."""
 from typing import Optional
 
 import tensorflow as tf  # type: ignore
@@ -53,9 +32,9 @@ class VoxelHead(tf.keras.layers.Layer):
                num_classes: int,
                kernel_regularizer:
                Optional[tf.keras.regularizers.Regularizer] = None,
-               conv_bias_regularizer:
+               bias_regularizer:
                Optional[tf.keras.regularizers.Regularizer] = None,
-               conv_activ_regularizer:
+               activity_regularizer:
                Optional[tf.keras.regularizers.Regularizer] = None,
                **kwargs):
     """Initializes a Voxel Branch Prediction Head.
@@ -82,8 +61,8 @@ class VoxelHead(tf.keras.layers.Layer):
         classes for each voxel. This option is used by the Pix3d Mesh R-CNN
         architecture.
       kernel_regularizer: Convolutional layer weight regularizer object.
-      conv_bias_regularizer: Convolutional layer bias regularizer object.
-      conv_activ_regularizer: Convolutional layer activation regularizer object.
+      bias_regularizer: Convolutional layer bias regularizer object.
+      activity_regularizer: Convolutional layer activation regularizer object.
       **kwargs: other keyword arguments to be passed.
     """
     super().__init__(**kwargs)
@@ -92,16 +71,19 @@ class VoxelHead(tf.keras.layers.Layer):
     self._conv_dims = conv_dims
     self._num_conv = num_conv
     self._use_group_norm = use_group_norm
-    self._predict_classes = predict_classes
-    self._bilinearly_upscale_input = bilinearly_upscale_input
+    self._predict_classes = tf.constant(
+        predict_classes, dtype=tf.bool)
+    self._bilinearly_upscale_input = tf.constant(
+        bilinearly_upscale_input, dtype=tf.bool)
+    self._class_based_voxel = class_based_voxel
     self._num_classes = num_classes if (
         predict_classes and class_based_voxel) else 1
 
     self._base_config = dict(
         activation=None,  # Apply ReLU separately in case we want to use GroupNorm
         kernel_regularizer=kernel_regularizer,
-        bias_regularizer=conv_bias_regularizer,
-        activity_regularizer=conv_activ_regularizer)
+        bias_regularizer=bias_regularizer,
+        activity_regularizer=activity_regularizer)
 
     self._non_predictor_initializers = dict(
         kernel_initializer=tf.keras.initializers.VarianceScaling(
@@ -186,16 +168,23 @@ class VoxelHead(tf.keras.layers.Layer):
                 false_fn=lambda: tf.keras.layers.Lambda(lambda x: x)(x))
     return x
 
-  @property
-  def output_depth(self) -> int:
-    return self._voxel_depth
-
   def get_config(self) -> dict:
+    """Get config dict of the VoxelHead layer."""
+    regularizers = dict(self._base_config)
+    del regularizers['activation']
+
     config = dict(
-        input_channels=self._input_channels,
         voxel_depth=self._voxel_depth,
         conv_dims=self._conv_dims,
         num_conv=self._num_conv,
         use_group_norm=self._use_group_norm,
-        **self._base_config)
+        predict_classes=self._predict_classes,
+        bilinearly_upscale_input=self._bilinearly_upscale_input,
+        class_based_voxel=self._class_based_voxel,
+        num_classes=self._num_classes,
+        **regularizers)
     return config
+
+  @classmethod
+  def from_config(cls, config):
+    return cls(**config)
