@@ -36,6 +36,7 @@ class VoxelHeadTest(parameterized.TestCase, tf.test.TestCase):
   """Test for Mesh R-CNN Voxel Prediction Head."""
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
+    tf.keras.backend.set_image_data_format('channels_last')
     self._num_classes = 5
     self._conv_dims = 256
     self._use_group_norm = False
@@ -72,7 +73,6 @@ class VoxelHeadTest(parameterized.TestCase, tf.test.TestCase):
                             num_input_channels: int) -> None:
     """Verify the output shapes of the voxel head."""
     # pylint: disable=missing-param-doc
-    tf.keras.backend.set_image_data_format('channels_last')
     head = voxel_head.VoxelHead(voxel_depth, self._conv_dims, num_conv,
                                 self._use_group_norm, predict_classes,
                                 not predict_classes, class_based_voxel,
@@ -98,7 +98,6 @@ class VoxelHeadTest(parameterized.TestCase, tf.test.TestCase):
                                  num_input_channels: int) -> None:
     """Create a network object that sets all of its config options."""
     # pylint: disable=missing-param-doc
-    tf.keras.backend.set_image_data_format('channels_last')
     head = voxel_head.VoxelHead(voxel_depth, self._conv_dims, num_conv,
                                 self._use_group_norm, predict_classes,
                                 not predict_classes, class_based_voxel,
@@ -123,7 +122,6 @@ class VoxelHeadTest(parameterized.TestCase, tf.test.TestCase):
                             num_input_channels: int) -> None:
     """Ensure the gradients of the layer are not None."""
     # pylint: disable=missing-param-doc
-    tf.keras.backend.set_image_data_format('channels_last')
     head = voxel_head.VoxelHead(voxel_depth, self._conv_dims, num_conv,
                                 self._use_group_norm, predict_classes,
                                 not predict_classes, class_based_voxel,
@@ -149,8 +147,5 @@ class VoxelHeadTest(parameterized.TestCase, tf.test.TestCase):
     self.assertNotIn(None, grad)
 
 
-
 if __name__ == '__main__':
-  # from mesh_rcnn.utils.run_utils import prep_gpu
-  # prep_gpu()
   tf.test.main()
