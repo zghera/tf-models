@@ -13,6 +13,8 @@
 # limitations under the License.
 """Tests for Mesh R-CNN Heads."""
 
+from typing import Tuple
+
 import tensorflow as tf  # type: ignore
 from absl.testing import parameterized  # type: ignore
 
@@ -38,6 +40,29 @@ class VoxelHeadTest(parameterized.TestCase, tf.test.TestCase):
     self._conv_dims = 256
     self._use_group_norm = False
 
+  def _get_expected_out_shape(self,
+                            predict_classes: bool,
+                            class_based_voxel: bool,
+                            voxel_depth: int,
+                            batch_size: int) -> Tuple[int, ...]:
+    """Get the output shape of the voxel head."""
+    # pylint: disable=missing-param-doc
+    expected_shape: Tuple[int, ...]
+    if predict_classes:
+      expected_num_classes: int = self._num_classes if class_based_voxel else 1
+      expected_shape = (batch_size, expected_num_classes,
+                        voxel_depth, voxel_depth, voxel_depth)
+    else:
+      expected_shape = (batch_size, voxel_depth, voxel_depth, voxel_depth)
+    return expected_shape
+
+  def _get_input_shape(self,
+                       voxel_depth: int,
+                       batch_size: int,
+                       num_input_channels: int) -> Tuple[int, int, int, int]:
+    """Get the output input shape of the voxel head."""
+    return (batch_size, voxel_depth // 2, voxel_depth // 2, num_input_channels)
+
   def test_network_creation(self,
                             predict_classes: bool,
                             class_based_voxel: bool,
@@ -53,17 +78,14 @@ class VoxelHeadTest(parameterized.TestCase, tf.test.TestCase):
                                 not predict_classes, class_based_voxel,
                                 self._num_classes)
 
-    input_shape = [batch_size, voxel_depth // 2, voxel_depth // 2,
-                   num_input_channels]
+    input_shape = self._get_input_shape(voxel_depth, batch_size,
+                                        num_input_channels)
     input_tensor = tf.ones(input_shape, dtype=tf.float32)
     output = head(input_tensor)
 
-    if predict_classes:
-      expected_num_classes = self._num_classes if class_based_voxel else 1
-      expected_shape = [batch_size, expected_num_classes,
-                        voxel_depth, voxel_depth, voxel_depth]
-    else:
-      expected_shape = [batch_size, voxel_depth, voxel_depth, voxel_depth]
+    expected_shape = self._get_expected_out_shape(predict_classes,
+                                                  class_based_voxel,
+                                                  voxel_depth, batch_size)
 
     self.assertAllEqual(output.shape.as_list(), expected_shape)
 
@@ -82,8 +104,8 @@ class VoxelHeadTest(parameterized.TestCase, tf.test.TestCase):
                                 not predict_classes, class_based_voxel,
                                 self._num_classes)
 
-    input_shape = [batch_size, voxel_depth // 2, voxel_depth // 2,
-                   num_input_channels]
+    input_shape = self._get_input_shape(voxel_depth, batch_size,
+                                        num_input_channels)
     input_tensor = tf.ones(input_shape, dtype=tf.float32)
     _ = head(input_tensor)
 
