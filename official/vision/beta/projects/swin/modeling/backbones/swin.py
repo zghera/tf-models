@@ -152,7 +152,12 @@ class SwinTransformer(tf.keras.Model):
     for i in range(self._min_level, self._max_level + 1):
       x = outputs[str(i)]
       if self._normalize_endpoints:
-        endpoints[str(i)] = nn_blocks._get_norm_fn(self._norm_layer)()(x)
+        norm_fn = nn_blocks._get_norm_fn(self._norm_layer)()
+
+        _, H, W, C = x.shape
+        x = tf.reshape(x, [-1, H * W, C])
+        endpoints[str(i)] = norm_fn(x)
+        x = tf.reshape(x, [-1, H, W, C])
       else:
         endpoints[str(i)] = x
       output_specs[str(i)] = endpoints[str(i)].get_shape()
