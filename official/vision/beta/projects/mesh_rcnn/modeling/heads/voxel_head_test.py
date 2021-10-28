@@ -18,6 +18,9 @@ from typing import Tuple
 import tensorflow as tf  # type: ignore
 from absl.testing import parameterized  # type: ignore
 
+from official.vision.beta.projects.mesh_rcnn.configs import \
+    mesh_rcnn as mesh_rcnn_config
+from official.vision.beta.projects.mesh_rcnn.modeling import factory
 from official.vision.beta.projects.mesh_rcnn.modeling.heads import voxel_head
 
 
@@ -33,12 +36,12 @@ from official.vision.beta.projects.mesh_rcnn.modeling.heads import voxel_head
   'voxel_depth': 24, 'batch_size': 32, 'num_input_channels': 256},
 )
 class VoxelHeadTest(parameterized.TestCase, tf.test.TestCase):
-  """Test for Mesh R-CNN Voxel Prediction Head."""
+  """Test for Mesh R-CNN Voxel Branch Prediction Head."""
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     tf.keras.backend.set_image_data_format('channels_last')
     self._num_classes = 5
-    self._conv_dims = 256
+    self._conv_dim = 256
     self._use_group_norm = False
 
   def _get_expected_out_shape(self,
@@ -73,7 +76,7 @@ class VoxelHeadTest(parameterized.TestCase, tf.test.TestCase):
                             num_input_channels: int) -> None:
     """Verify the output shapes of the voxel head."""
     # pylint: disable=missing-param-doc
-    head = voxel_head.VoxelHead(voxel_depth, self._conv_dims, num_conv,
+    head = voxel_head.VoxelHead(voxel_depth, self._conv_dim, num_conv,
                                 self._use_group_norm, predict_classes,
                                 not predict_classes, class_based_voxel,
                                 self._num_classes)
@@ -98,7 +101,7 @@ class VoxelHeadTest(parameterized.TestCase, tf.test.TestCase):
                                  num_input_channels: int) -> None:
     """Create a network object that sets all of its config options."""
     # pylint: disable=missing-param-doc
-    head = voxel_head.VoxelHead(voxel_depth, self._conv_dims, num_conv,
+    head = voxel_head.VoxelHead(voxel_depth, self._conv_dim, num_conv,
                                 self._use_group_norm, predict_classes,
                                 not predict_classes, class_based_voxel,
                                 self._num_classes)
@@ -114,15 +117,15 @@ class VoxelHeadTest(parameterized.TestCase, tf.test.TestCase):
     self.assertAllEqual(head.get_config(), deserialized.get_config())
 
   def test_gradient_pass_though(self,
-                            predict_classes: bool,
-                            class_based_voxel: bool,
-                            num_conv: int,
-                            voxel_depth: int,
-                            batch_size: int,
-                            num_input_channels: int) -> None:
+                                predict_classes: bool,
+                                class_based_voxel: bool,
+                                num_conv: int,
+                                voxel_depth: int,
+                                batch_size: int,
+                                num_input_channels: int) -> None:
     """Ensure the gradients of the layer are not None."""
     # pylint: disable=missing-param-doc
-    head = voxel_head.VoxelHead(voxel_depth, self._conv_dims, num_conv,
+    head = voxel_head.VoxelHead(voxel_depth, self._conv_dim, num_conv,
                                 self._use_group_norm, predict_classes,
                                 not predict_classes, class_based_voxel,
                                 self._num_classes)
@@ -146,6 +149,27 @@ class VoxelHeadTest(parameterized.TestCase, tf.test.TestCase):
 
     self.assertNotIn(None, grad)
 
+  def test_build_from_config(self,
+                             predict_classes: bool,
+                             class_based_voxel: bool,
+                             num_conv: int,
+                             voxel_depth: int,
+                             batch_size: int,
+                             num_input_channels: int) -> None:
+    """Test head creation from config and factory."""
+    # pylint: disable=missing-param-doc,unused-argument
+    cfg = mesh_rcnn_config.VoxelHead(voxel_depth=voxel_depth,
+              conv_dim=self._conv_dim,
+              num_conv=num_conv,
+              use_group_norm=self._use_group_norm,
+              predict_classes=predict_classes,
+              bilinearly_upscale_input=not predict_classes,
+              class_based_voxel=class_based_voxel,
+              num_classes=self._num_classes)
+    _ = factory.build_voxel_head(cfg,
+                                 kernel_regularizer=None,
+                                 bias_regularizer=None,
+                                 activity_regularizer=None)
 
 if __name__ == '__main__':
   tf.test.main()

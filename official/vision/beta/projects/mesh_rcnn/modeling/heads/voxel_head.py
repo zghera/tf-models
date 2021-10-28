@@ -23,7 +23,7 @@ class VoxelHead(tf.keras.layers.Layer):
 
   def __init__(self,
                voxel_depth: int,
-               conv_dims: int,
+               conv_dim: int,
                num_conv: int,
                use_group_norm: bool,
                predict_classes: bool,
@@ -40,7 +40,7 @@ class VoxelHead(tf.keras.layers.Layer):
     """Initializes a Voxel Branch Prediction Head.
     Args:
       voxel_depth: The number of depth channels for the predicted voxels.
-      conv_dims: Number of output features for each Conv2D layer in the
+      conv_dim: Number of output features for each Conv2D layer in the
         Voxel head.
       num_conv: Number of Conv2D layers prior to the Conv2DTranspose layer.
       use_group_norm: Whether or not to use GropNormalization in the fully
@@ -68,7 +68,7 @@ class VoxelHead(tf.keras.layers.Layer):
     super().__init__(**kwargs)
 
     self._voxel_depth = voxel_depth
-    self._conv_dims = conv_dims
+    self._conv_dim = conv_dim
     self._num_conv = num_conv
     self._use_group_norm = use_group_norm
     self._predict_classes = tf.constant(
@@ -92,7 +92,7 @@ class VoxelHead(tf.keras.layers.Layer):
     )
 
     self._fully_conv2d_config = dict(
-        filters=self._conv_dims,
+        filters=self._conv_dim,
         kernel_size=(3, 3),
         strides=(1, 1),
         padding='same',
@@ -101,7 +101,7 @@ class VoxelHead(tf.keras.layers.Layer):
         **self._base_config)
 
     self._deconv2d_config = dict(
-        filters=self._conv_dims,
+        filters=self._conv_dim,
         kernel_size=(2, 2),
         strides=(2, 2),
         padding='valid',
@@ -175,7 +175,7 @@ class VoxelHead(tf.keras.layers.Layer):
 
     config = dict(
         voxel_depth=self._voxel_depth,
-        conv_dims=self._conv_dims,
+        conv_dim=self._conv_dim,
         num_conv=self._num_conv,
         use_group_norm=self._use_group_norm,
         predict_classes=self._predict_classes,
