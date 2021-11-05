@@ -9,7 +9,6 @@ import multiprocessing as mp
 from official.vision.beta.data import tfrecord_lib
 from research.object_detection.utils import dataset_util
 from official.vision.beta.data.tfrecord_lib import convert_to_feature
-from create_pix3d_tf_record import parse_obj_file
 
 flags.DEFINE_multi_string('shapenet_dir', '', 'Directory containing ShapeNet.')
 flags.DEFINE_string('output_file_prefix', '/tmp/train', 'Path to output file')
@@ -20,6 +19,42 @@ FLAGS = flags.FLAGS
 logger = tf.get_logger()
 logger.setLevel(logging.INFO)
 
+def parse_obj_file(file):
+    """
+    Parses relevant data out of a .obj file. This contains all of the model information.
+    Args:
+        file: file path to .obj file
+    Return:
+        vertices: vertices of object
+        faces: faces of object
+    """
+    vertices = []
+    faces = []
+
+    obj_file = open(file, 'r')
+    lines = obj_file.readlines()
+
+    for line in lines:
+        lineID = line[0:2]
+        
+        if lineID == "v ":
+            vertex = line[2:].split(" ")
+            
+            for i, v in enumerate(vertex):
+                vertex[i] = float(v)
+
+            vertices.append(vertex)
+
+        if lineID == "f ":
+
+            face = line[2:].split(" ")
+            
+            for i, f in enumerate(face):
+                face[i] = [int(x) - 1 for x in f.split("/")]
+
+            faces.append(face)
+
+    return vertices, faces
 
 def create_tf_example(image):
 
