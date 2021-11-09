@@ -95,8 +95,6 @@ def visualize_tf_record(shapenet_dir,
         features = example.features.feature
         vertices = tf.io.parse_tensor(features["vertices"].bytes_list.value[0], tf.float32).numpy().tolist()
         faces = tf.io.parse_tensor(features["faces"].bytes_list.value[0], tf.int32).numpy().tolist()
-        mask = tf.io.parse_tensor(features["mask"].bytes_list.value[0], tf.int32).numpy().tolist()
-        image = tf.io.parse_tensor(features["img/encoded"].bytes_list.value[0], tf.int32).numpy().tolist()
 
         filename = str(features["img/filename"].bytes_list.value[0]).split("/")[2][:-1]
         filename = filename.split(".")[0]
