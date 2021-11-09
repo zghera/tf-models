@@ -1725,3 +1725,34 @@ class Reorg(tf.keras.layers.Layer):
         x[..., 1::2, 1::2, :]
     ],
                      axis=-1)
+
+
+class DWConv(tf.keras.layers.Layer):
+  def __init__ (self, 
+                filters, 
+                kernel_size, 
+                strides=1, 
+                padding='valid', # TODO: need to make sure this is correct
+                groups=1,
+                use_biase=False,
+                use_bn=True,
+                activation='silu',
+                **kwargs):
+    super().__init__(**kwargs)
+    self._conv1 = ConvBN(filters, 
+                      kernel_size, 
+                      strides=strides,
+                      use_bn=use_bn,
+                      activation=activation)
+    self._conv2 = ConvBN(filters, 
+                      kernel_size=1, 
+                      strides=1,
+                      use_bn=use_bn,
+                      activation=activation)
+
+  def call(self, inputs, **kwargs):
+    x = self._conv1(inputs)
+    x = self._conv2(x)
+    return x
+
+    
