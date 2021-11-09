@@ -70,28 +70,7 @@ def write_obj_file(vertices,
                 ret += str(coordinate[0]) + " "
 
             print(ret, file=f)
-
-
-def write_masked_image(mask,
-                       image,
-                       filename):
-    """Writes a new .png file from data.
-    Args:
-        mask: 2d array of mask data
-        image: 3d array of image data
-        filename: Filename to write .png file to
-    """
-    logging.info(f"Logging file {filename}")
-    dim1 = len(mask)
-    dim2 = len(mask[0])
-
-    for i in range(dim1):
-        for j in range(dim2):
-            if mask[i][j] > 0:  # add green mask to image
-                image[i][j][1] += 50
-
-    cv2.imwrite(filename, np.array(image))
-
+            
 
 def visualize_tf_record(shapenet_dir,
                         output_path,
