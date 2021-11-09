@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# Author: JEthan Suleman & Abhi Raja
+# Author: Ethan Suleman & Abhi Raja
 
 r"""Takes TFRecord containing ShapeNet dataset and visualizes it.
 Example usage:
