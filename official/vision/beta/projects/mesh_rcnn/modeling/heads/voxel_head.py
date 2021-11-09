@@ -71,10 +71,8 @@ class VoxelHead(tf.keras.layers.Layer):
     self._conv_dim = conv_dim
     self._num_conv = num_conv
     self._use_group_norm = use_group_norm
-    self._predict_classes = tf.constant(
-        predict_classes, dtype=tf.bool)
-    self._bilinearly_upscale_input = tf.constant(
-        bilinearly_upscale_input, dtype=tf.bool)
+    self._predict_classes = predict_classes
+    self._bilinearly_upscale_input = bilinearly_upscale_input
     self._class_based_voxel = class_based_voxel
     self._num_classes = num_classes if (
         predict_classes and class_based_voxel) else 1
@@ -156,16 +154,16 @@ class VoxelHead(tf.keras.layers.Layer):
       (N, V, V, V) for ShapeNet model and (N, C, V, V, V) for Pix3D model
       where N = batch size, V = `voxel_depth`, and C = `num_classes`.
     """
-    x = tf.cond(self._bilinearly_upscale_input,
-                true_fn=lambda: self._interpolate(inputs),
-                false_fn=lambda: tf.keras.layers.Lambda(lambda x: x)(inputs))
+    if self._bilinearly_upscale_input:
+      x = self._interpolate(inputs)
+    else:
+      x = inputs
     for layer in self._conv2d_norm_relu_layers:
       x = layer(x)
     x = self._deconv(x)
     x = self._predictor(x)
-    x = tf.cond(self._predict_classes,
-                true_fn=lambda: self._reshape(x),
-                false_fn=lambda: tf.keras.layers.Lambda(lambda x: x)(x))
+    if self._predict_classes:
+      x = self._reshape(x)
     return x
 
   def get_config(self) -> dict:
