@@ -11,37 +11,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# Author: Ethan Suleman & Abhi Raja
 
-r"""Takes TFRecord containing ShapeNet dataset and visualizes it.
+r"""Takes TFRecord containing Pix3D dataset and visualizes it.
 Example usage:
-    python shapenet_visualizer.py --logtostderr \
+    python pix3d_visualizer.py --logtostderr \
       --num_models=2 \
-      --shapenet_dir="${SHAPENET_TFRECORD_DIR}" \
-      --output_file_prefix="${OUTPUT_DIR/FILE_PREFIX}"
+      --pix3d_dir="${PIX3D_TFRECORD_DIR}" \
+      --output_folder="${OUTPUT_DIR}"
 """
 
-import json
 import logging
 import os
-import json
 
 from absl import app  # pylint:disable=unused-import
 from absl import flags
 import numpy as np
-from numpy.core.defchararray import encode
-from numpy.lib.arraysetops import isin
-from numpy.lib.type_check import imag
-import scipy.io as sio
 import cv2
 
 import tensorflow as tf
-import itertools
-import multiprocessing as mp
 
-flags.DEFINE_multi_string('shapenet_dir', '', 'Directory containing ShapeNet.')
-flags.DEFINE_string('output_file_prefix', '/tmp/output', 'Path to output files')
-flags.DEFINE_integer('num_models', 2, 'Number of models rebuilt from TFRecord.')
+flags.DEFINE_multi_string('pix3d_dir', 'C:/Users/Ethan/tmp', 'Directory containing Pix3d.')
+flags.DEFINE_string('output_folder', 'C:/Users/Ethan/tmp/output',
+                    'Path to output files')
+flags.DEFINE_integer(
+    'num_models', 2, 'Number of models rebuilt from TFRecord.')
 
 FLAGS = flags.FLAGS
 
@@ -60,6 +53,7 @@ def write_obj_file(vertices,
     """
     logging.info(f"Logging file {filename}")
     with open(filename, 'w') as f:
+
         for vertex in vertices:
             print("v " + ' '.join(map(str, vertex)), file=f)
 
@@ -70,22 +64,22 @@ def write_obj_file(vertices,
                 ret += str(coordinate[0]) + " "
 
             print(ret, file=f)
-            
 
-def visualize_tf_record(shapenet_dir,
+
+def visualize_tf_record(pix3d_dir,
                         output_path,
                         num_models):
-    """Visualizes shapenet data in TFRecord format.
+    """Visualizes pix3d data in TFRecord format.
     Args:
-      shapenet_dir: shapenet_dir for TFRecords
+      pix3d_dir: pix3d_dir for TFRecords
       output_path: Path to output .obj files.
       num_models: Number of output files to create.
     """
 
     logging.info(
-        f"Starting to visualize {num_models} models from the TFRecords in directory {shapenet_dir} into {output_path}.")
+        f"Starting to visualize {num_models} models from the TFRecords in directory {pix3d_dir} into {output_path}.")
 
-    filenames = [os.path.join(shapenet_dir, x) for x in os.listdir(shapenet_dir)]
+    filenames = [os.path.join(pix3d_dir, x) for x in os.listdir(pix3d_dir)]
 
     raw_dataset = tf.data.TFRecordDataset(filenames)
 
@@ -93,10 +87,21 @@ def visualize_tf_record(shapenet_dir,
         example = tf.train.Example()
         example.ParseFromString(raw_record.numpy())
         features = example.features.feature
-        vertices = tf.io.parse_tensor(features["vertices"].bytes_list.value[0], tf.float32).numpy().tolist()
-        faces = tf.io.parse_tensor(features["faces"].bytes_list.value[0], tf.int32).numpy().tolist()
 
-        filename = str(features["img/filename"].bytes_list.value[0]).split("/")[2][:-1]
+        vertices = tf.io.parse_tensor(
+            features["model/vertices"].bytes_list.value[0], tf.float32).numpy().tolist()
+        faces = tf.io.parse_tensor(
+            features["model/faces"].bytes_list.value[0], tf.int32).numpy().tolist()
+        mask = cv2.imdecode(np.fromstring(
+            features["mask"].bytes_list.value[0], np.uint8), cv2.IMREAD_GRAYSCALE).tolist()
+        image = cv2.imdecode(np.fromstring(
+            features["img/encoded"].bytes_list.value[0], np.uint8), flags=1).tolist()
+
+        # mask = tf.io.parse_tensor(features["mask"].bytes_list.value[0], tf.int32).numpy().tolist()
+        # image = tf.io.parse_tensor(features["img/encoded"].bytes_list.value[0], tf.int32).numpy().tolist()
+
+        filename = str(
+            features["img/filename"].bytes_list.value[0]).split("/")[2][:-1]
         filename = filename.split(".")[0]
         filename = os.path.join(output_path, filename)
 
@@ -105,13 +110,14 @@ def visualize_tf_record(shapenet_dir,
 
 
 def main(_):
-    assert FLAGS.shapenet_dir, '`shapenet_dir` missing.'
+    assert FLAGS.pix3d_dir, '`pix3d_dir` missing.'
 
-    directory = os.path.dirname(FLAGS.output_file_prefix)
+    directory = os.path.dirname(FLAGS.output_folder)
     if not tf.io.gfile.isdir(directory):
         tf.io.gfile.makedirs(directory)
 
-    visualize_tf_record(FLAGS.shapenet_dir[0], FLAGS.output_file_prefix, FLAGS.num_models)
+    visualize_tf_record(
+        FLAGS.pix3d_dir[0], FLAGS.output_folder, FLAGS.num_models)
 
 
 if __name__ == '__main__':

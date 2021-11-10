@@ -1,23 +1,24 @@
-from absl import app  # pylint:disable=unused-import
-from absl import flags
-import numpy as np
 import json
-import tensorflow as tf
+import logging
 import os
 
-import multiprocessing as mp
+import tensorflow as tf
+from absl import app  # pylint:disable=unused-import
+from absl import flags
+
 from official.vision.beta.data import tfrecord_lib
-from research.object_detection.utils import dataset_util
 from official.vision.beta.data.tfrecord_lib import convert_to_feature
 
-flags.DEFINE_multi_string('shapenet_dir', '', 'Directory containing ShapeNet.')
-flags.DEFINE_string('output_file_prefix', '/tmp/train', 'Path to output file')
+flags.DEFINE_multi_string('shapenet_dir', '', 'Directory containing '
+                                                                                   'ShapeNet.')
+flags.DEFINE_string('output_file_prefix', '', 'Path to output file')
 flags.DEFINE_integer('num_shards', 32, 'Number of shards for output file.')
 
 FLAGS = flags.FLAGS
 
 logger = tf.get_logger()
 logger.setLevel(logging.INFO)
+
 
 def parse_obj_file(file):
     """
@@ -36,10 +37,10 @@ def parse_obj_file(file):
 
     for line in lines:
         lineID = line[0:2]
-        
+
         if lineID == "v ":
             vertex = line[2:].split(" ")
-            
+
             for i, v in enumerate(vertex):
                 vertex[i] = float(v)
 
@@ -48,7 +49,7 @@ def parse_obj_file(file):
         if lineID == "f ":
 
             face = line[2:].split(" ")
-            
+
             for i, f in enumerate(face):
                 face[i] = [int(x) - 1 for x in f.split("/")]
 
@@ -56,8 +57,8 @@ def parse_obj_file(file):
 
     return vertices, faces
 
-def create_tf_example(image):
 
+def create_tf_example(image):
     model_id = image["model_id"]
     label = image["label"]
 
@@ -69,22 +70,23 @@ def create_tf_example(image):
                     "vertices": convert_to_feature(model_vertices),
                     "faces": convert_to_feature(model_faces)}
 
-
     example = tf.train.Example(
         features=tf.train.Features(feature=feature_dict))
 
     return example, 0
 
+
 def generate_annotations(images, shapenet_dir):
     for image in images:
-        yield {"shapenet_dir": shapenet_dir, 
-                "label": image["label"], 
-                "model_id": image["model_id"],
-                "synset_id": image["synset_id"]}
+        yield {"shapenet_dir": shapenet_dir,
+               "label": image["label"],
+               "model_id": image["model_id"],
+               "synset_id": image["synset_id"]}
+
 
 def _create_tf_record_from_shapenet_dir(shapenet_dir,
-                                     output_path,
-                                     num_shards):
+                                        output_path,
+                                        num_shards):
     """Loads Shapenet json files and converts to tf.Record format.
     Args:
       images_info_file: shapenet_dir download directory
@@ -94,21 +96,22 @@ def _create_tf_record_from_shapenet_dir(shapenet_dir,
 
     logging.info('writing to output path: %s', output_path)
 
-    #create synset ID to label mapping dictionary
-    with open(shapenet_synset_dict.json, "r") as dict_file:
+    # create synset ID to label mapping dictionary
+    with open('C:/Users/Ethan/PycharmProjects/tf-models/official/vision/beta/projects/mesh_rcnn/data'
+              '/shapenet_synset_dict.json', "r") as dict_file:
         synset_dict = json.load(dict_file)
 
-    #images list
+    # images list
     images = []
 
-    for _, synset_directories, _ in os.walk(shapenet_dir):
+    for _, synset_directories, _ in os.walk(shapenet_dir[0]):
         for synset_directory in synset_directories:
-            for _, object_directories, _ in os.walk(os.path.join(shapenet_dir, synset_directory)):
+            for _, object_directories, _ in os.walk(os.path.join(shapenet_dir[0], synset_directory)):
                 for object_directory in object_directories:
-                    image = {"model_id" : object_directory, 
-                            "label" : synset_dict[synset_directory],
-                            "shapenet_dir": shapenet_dir,
-                            "synset_id": synset_directory}
+                    image = {"model_id": object_directory,
+                             "label": synset_dict[synset_directory],
+                             "shapenet_dir": shapenet_dir,
+                             "synset_id": synset_directory}
                     images.append(image)
 
     shapenet_annotations_iter = generate_annotations(
@@ -119,12 +122,15 @@ def _create_tf_record_from_shapenet_dir(shapenet_dir,
 
     logging.info('Finished writing, skipped %d annotations.', num_skipped)
 
+
 def main(_):
     assert FLAGS.shapenet_dir, '`shapenet_dir` missing.'
 
     directory = os.path.dirname(FLAGS.output_file_prefix)
     if not tf.io.gfile.isdir(directory):
         tf.io.gfile.makedirs(directory)
+
+    _create_tf_record_from_shapenet_dir('shapenet_dir', 'tmp', 32)
 
 
 if __name__ == '__main__':
