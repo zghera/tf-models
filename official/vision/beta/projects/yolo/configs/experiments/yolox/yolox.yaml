@@ -1,5 +1,5 @@
-# --experiment_type=scaled_yolo
-# mAP 47.6
+# --experiment_type=yolox
+# mAP 
 runtime:
   distribution_strategy: 'tpu'
   mixed_precision_dtype: 'float32'
@@ -16,10 +16,10 @@ task:
     decoder:
       type: yolo_decoder
       yolo_decoder:
-        version: v4
-        type: csp
+        version: vx
+        type: regular
     head:
-      smart_bias: true
+      num_classes: 80
     detection_generator:
       box_type:
         'all': scaled
@@ -55,7 +55,7 @@ task:
               box: [36, 75], box: [76, 55], box: [72, 146],
               box: [142, 110], box: [192, 243], box: [459, 401]]
   train_data:
-    input_path: '/readahead/200M/placer/prod/home/tensorflow-performance-data/datasets/coco/train*'
+    input_path: '/content/train*'
     shuffle_buffer_size: 10000
     parser:
       mosaic:
@@ -71,4 +71,4 @@ task:
       aug_rand_translate: 0.1
       area_thresh: 0.1
   validation_data:
-    input_path: '/readahead/200M/placer/prod/home/tensorflow-performance-data/datasets/coco/val*'
+    input_path: '/content/val*'

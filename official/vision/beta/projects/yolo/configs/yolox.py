@@ -136,8 +136,8 @@ class YOLOXHead(hyperparams.Config):
   """Parameterization for the YOLOX Head."""
   num_classes: int = None
   width: float = 1.0
-  strides: List[int] = [8, 16, 32]
-  in_channels: List[int] = [256, 512, 1024]
+  # strides: List[int] = [8, 16, 32]
+  # in_channels: List[int] = [256, 512, 1024]
   depthwise: bool = False
   activation: str = 'silu'
 
@@ -270,8 +270,8 @@ def yolox() -> cfg.ExperimentConfig:
       ])
 
 
-@exp_factory.register_config_factory('yolox')
-def yolox() -> cfg.ExperimentConfig:
+@exp_factory.register_config_factory('yolox_regular')
+def yolox_regular() -> cfg.ExperimentConfig:
   """COCO object detection with YOLOvx."""
   train_batch_size = 64
   eval_batch_size = 8
@@ -291,7 +291,7 @@ def yolox() -> cfg.ExperimentConfig:
           model=YOLOX(
               darknet_based_model=True,
               norm_activation=common.NormActivation(use_sync_bn=True),
-              head=YoloHead(num_classes=80),
+              head=YOLOXHead(num_classes=80),
               loss=YoloLoss(use_scaled_loss=False, update_on_repeat=True),
               anchor_boxes=AnchorBoxes(
                   anchors_per_scale=3,

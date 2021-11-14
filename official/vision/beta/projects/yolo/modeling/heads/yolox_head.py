@@ -14,11 +14,14 @@
 
 # Lint as: python3
 """Yolox heads."""
+# import sys
+# sys.path.append("/content/drive/MyDrive/tf-models/official/vision/beta/projects")
+from loguru import logger
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from yolo.modeling.layers import nn_blocks
+from official.vision.beta.projects.yolo.modeling.layers import nn_blocks
 from tensorflow.keras.layers import Concatenate
-from yolo.ops import box_ops
+from official.vision.beta.projects.yolo.ops import box_ops
 
 class YOLOXHead(tf.keras.layers.Layer):
   """YOLOX Prediction Head."""
@@ -42,106 +45,117 @@ class YOLOXHead(tf.keras.layers.Layer):
     """
 
     super().__init__(**kwargs)
+    # self._min_level = min_level
+    # self._max_level = max_level
+
+    self._key_list = [
+        str(key) for key in range(3, 6)
+    ]
 
     self._n_anchors = 1
     self._num_classes = num_classes
     self._decode_in_inference = True
 
-    self._cls_convs = []
-    self._reg_convs = []
+    self._cls_convs = dict()
+    self._reg_convs = dict()
     
-    self._cls_preds = []
-    self._reg_preds = []
-    self._obj_preds = []
-    self._stems = []
+    self._cls_preds = dict()
+    self._reg_preds = dict()
+    self._obj_preds = dict()
+    self._stems = dict()
 
     self.prior_prob = 1e-2
     self.bias=-tf.math.log((1-self.prior_prob)/self.prior_prob)
 
-    Conv = nn_blocks.DWConv if depthwise else nn_blocks.ConvBN 
-    for i in range(len(in_channels)):
-      self._stems.append(
-        nn_blocks.ConvBN(
+    Conv = nn_blocks.DWConv if depthwise else nn_blocks.BaseConv 
+    for k in self._key_list:
+      self._stems[k] = nn_blocks.BaseConv(
           filters=int(256 * width),
           kernel_size=1,
-          strides=(1, 1),
+          strides=1,
           padding='same', # TODO
-          use_bn = True,
+          # use_bn = True,
           activation=act,
-        ),
       )
+    # for i in range(len(in_channels)):
+    #   self._stems.append(
+    #     nn_blocks.BaseConv(
+    #       filters=int(256 * width),
+    #       kernel_size=1,
+    #       strides=(1, 1),
+    #       padding='same', # TODO
+    #       # use_bn = True,
+    #       activation=act,
+    #     ),
+    #   )
 
-      self._cls_convs.append (
-        Sequential(
+      self._cls_convs[k] = Sequential(
           [
-          nn_blocks.ConvBN(
+          Conv(
             filters=int(256 * width),
             kernel_size=3,
-            strides=(1, 1),
-            use_bn = True,
+            strides=1,
+            # use_bn = True,
             activation=act,
           ),
-           nn_blocks.ConvBN(
+          Conv(
             filters=int(256 * width),
             kernel_size=3,
-            strides=(1, 1),
-            use_bn = True,
+            strides=1,
+            # use_bn = True,
             activation=act,
           ),
           ]
         )
-      )
+      
     
 
-      self._reg_convs.append(
-        Sequential(
+      self._reg_convs[k] = Sequential(
           [
             Conv(
               filters=int(256 * width),
               kernel_size=3,
-              strides=(1, 1),
-              use_bn = True,
+              strides=1,
+              # use_bn = True,
               activation=act,
             ),
             Conv(
               filters=int(256 * width),
               kernel_size=3,
-              strides=(1, 1),
-              use_bn = True,
+              strides=1,
+              # use_bn = True,
               activation=act,
             ),
           ]
         )
-      )
+      
         
 
 
-      self._cls_preds.append(
-        tf.keras.layers.Conv2D(
+      self._cls_preds[k] = tf.keras.layers.Conv2D(
           filters=self._n_anchors * self._num_classes,
           kernel_size=1,
-          strides=(1, 1),
-          padding='valid',
+          strides=1,
+          padding='same',
           bias_initializer=tf.keras.initializers.constant(self.bias)
-        ),
-      )
-      self._reg_preds.append(
-        tf.keras.layers.Conv2D(
+        )
+      
+      self._reg_preds[k] = tf.keras.layers.Conv2D(
           filters=4,
           kernel_size=1,
-          strides=(1, 1),
-          padding='valid',
-        ),
-      )
-      self._obj_preds.append(
-        tf.keras.layers.Conv2D(
+          strides=1,
+          padding='same',
+        )
+      
+      self._obj_preds[k] = tf.keras.layers.Conv2D(
           filters=self._n_anchors * 1,
           kernel_size=1,
-          strides=(1, 1),
-          padding='valid',
+          strides=1,
+          padding='same',
           bias_initializer=tf.keras.initializers.constant(self.bias)
-        ),
-      )
+        )
+    
+      
       
       # self.use_l1 = False
       # self.l1_loss = tf.keras.losses.MAE # TODO need reduce_mean after the loss
@@ -149,11 +163,21 @@ class YOLOXHead(tf.keras.layers.Layer):
       # self.iou_loss = box_ops.compute_iou
       # self.strides = strides
       # self.grids = [tf.zeros(1)] * len(in_channels)
-  @tf.function
+  # @tf.function
   def call(self, inputs, *args, **kwargs):
-    outputs=[]
-    for k,x in enumerate(inputs):
-        x = self.stems[k](x)
+    outputs=dict()
+    # logger.info("inputs = {}".format(inputs))
+    # inputs_list = list()
+    # for key, value in inputs.items():
+    #   inputs_list.append(value)
+    # logger.info("inputs_list = {}".format(inputs_list))
+    # inputs_tuple = tuple(inputs_list)
+    # logger.info("inputs_tuple = {}".format(inputs_tuple))
+
+
+    # for k,x in inputs.items(): 
+    for k in self._key_list:    
+        x = self._stems[k](inputs[k])
         cls_x = x
         reg_x = x
 
@@ -164,7 +188,8 @@ class YOLOXHead(tf.keras.layers.Layer):
         reg_output = self._reg_preds[k](reg_feat)
         obj_output = self._obj_preds[k](reg_feat)
         output=Concatenate(-1)([reg_output,obj_output,cls_output])
-        outputs.append(output)
+        outputs[k] = output
+      #TODO flatten
 
     return outputs
 #     def call(self, xin, labels=None, imgs=None):
