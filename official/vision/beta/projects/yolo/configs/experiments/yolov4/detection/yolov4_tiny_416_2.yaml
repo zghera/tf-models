@@ -24,7 +24,7 @@ task:
         'all': original
       scale_xy:
         'all': 1.05
-      max_boxes: 200
+      max_boxes: 300
       nms_type: iou
       iou_thresh: 0.001
       nms_thresh: 0.60
@@ -65,7 +65,7 @@ task:
       mosaic:
         mosaic_frequency: 0.0
         mixup_frequency: 0.0
-      max_num_instances: 200
+      max_num_instances: 300
       letter_box: False
       random_flip: True
       aug_rand_saturation: 1.5
@@ -87,7 +87,7 @@ task:
     is_training: false
     drop_remainder: true
     parser:
-      max_num_instances: 200
+      max_num_instances: 300
       letter_box: False
       use_tie_breaker: False
       best_match_only: False
@@ -120,10 +120,10 @@ trainer:
         momentum: 0.9
         momentum_start: 0.9
         nesterov: true
-        warmup_steps: 1000
+        warmup_steps: 250
         weight_decay: 0.000125
         name: SGD
     warmup:
       type: 'linear'
       linear:
-        warmup_steps: 1000  # learning rate rises from 0 to 0.0013 over 1000 steps
+        warmup_steps: 250  # learning rate rises from 0 to 0.0013 over 1000 steps
