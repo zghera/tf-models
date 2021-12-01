@@ -71,7 +71,7 @@ task:
       random_flip: True
       aug_rand_saturation: 1.5
       aug_rand_brightness: 1.5
-      aug_rand_hue: 0.001
+      aug_rand_hue: 0.1
       aug_scale_min: 0.750
       aug_scale_max: 1.168
       aug_rand_translate: 0.0 
@@ -100,13 +100,13 @@ task:
 trainer:
   train_steps: 250025
   validation_steps: 625
-  steps_per_loop: 230
-  summary_interval: 230
+  steps_per_loop: 460 #230
+  summary_interval: 460 #230
   validation_interval: 4600
-  checkpoint_interval: 230
+  checkpoint_interval: 460 #230
   optimizer_config:
     ema:
-      average_decay: 0.9998
+      average_decay: 0.9999
       trainable_weights_only: false
       dynamic_decay: true
     learning_rate:

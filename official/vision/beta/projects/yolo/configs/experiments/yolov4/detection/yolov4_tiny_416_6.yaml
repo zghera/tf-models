@@ -100,10 +100,10 @@ task:
 trainer:
   train_steps: 500050
   validation_steps: 625
-  steps_per_loop: 5000
-  summary_interval: 5000
-  validation_interval: 5000
-  checkpoint_interval: 5000
+  steps_per_loop: 460
+  summary_interval: 460
+  validation_interval: 4600
+  checkpoint_interval: 460
   optimizer_config:
     ema:
       average_decay: 0.9999
