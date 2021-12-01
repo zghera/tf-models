@@ -20,7 +20,7 @@ task:
       smart_bias: true
     detection_generator:
       box_type:
-        'all': scaled
+        'all': original
       scale_xy:
         'all': 2.0
       max_boxes: 300
