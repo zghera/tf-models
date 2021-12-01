@@ -43,7 +43,7 @@ task:
       objectness_smooth: 
         'all': 0.0
       max_delta:
-        'all': .inf
+        'all': 5.0
     norm_activation:
       activation: leaky
       norm_epsilon: 0.00001
