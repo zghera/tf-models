@@ -4,6 +4,7 @@ runtime:
   tpu_enable_xla_dynamic_padder: false
 task:
   model:
+    darknet_based_model: False
     input_size: [416, 416, 3]
     backbone:
       type: 'darknet'
