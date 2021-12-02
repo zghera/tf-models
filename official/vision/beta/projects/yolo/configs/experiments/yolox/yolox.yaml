@@ -22,7 +22,7 @@ task:
       num_classes: 80
     detection_generator:
       box_type:
-        'all': scaled
+        'all': anchor_free
       scale_xy:
         'all': 2.0
       max_boxes: 300
@@ -50,10 +50,8 @@ task:
       use_sync_bn: true
     num_classes: 80
     anchor_boxes:
-      anchors_per_scale: 3
-      boxes: [box: [12, 16], box: [19, 36], box: [40, 28],
-              box: [36, 75], box: [76, 55], box: [72, 146],
-              box: [142, 110], box: [192, 243], box: [459, 401]]
+      level_limits: [64, 128]
+      anchors_per_scale: 1
   train_data:
     input_path: '/content/train*'
     shuffle_buffer_size: 10000
