@@ -26,12 +26,24 @@ class YOLOXHead(tf.keras.layers.Layer):
 
   def __init__(
       self,
-      num_classes,
-      width=1.0,
+      min_level,
+      max_level,
+      classes=80,
+      boxes_per_level=1,
+      output_extras=0,
+      norm_momentum=0.99,
+      norm_epsilon=0.001,
+      kernel_initializer='VarianceScaling',
+      kernel_regularizer=None,
+      bias_regularizer=None,
+      activation='silu',
+      smart_bias=False,
+      use_separable_conv=False,
+      width_scaling = 1.0,
       strides=[8, 16, 32],
       in_channels=[256, 512, 1024],
-      act='silu',
       depthwise=False,
+      prior_prob = 1e-2,
       **kwargs
   ):
 
@@ -44,14 +56,20 @@ class YOLOXHead(tf.keras.layers.Layer):
     """
 
     super().__init__(**kwargs)
+    self._min_level = min_level
+    self._max_level = max_level
 
     self._key_list = [
-        str(key) for key in range(3, 6)
+        str(key) for key in range(self._min_level, self._max_level + 1)
     ]
 
-    self._n_anchors = 1
-    self._num_classes = num_classes
-    self._decode_in_inference = True
+    self._classes = classes
+    self._boxes_per_level = boxes_per_level
+    self._output_extras = output_extras
+
+    self._smart_bias = smart_bias
+    self._use_separable_conv = use_separable_conv
+    self._prior_prob = prior_prob
 
     self._cls_convs = dict()
     self._reg_convs = dict()
@@ -61,35 +79,35 @@ class YOLOXHead(tf.keras.layers.Layer):
     self._obj_preds = dict()
     self._stems = dict()
 
-    self.prior_prob = 1e-2
-    self.bias=-tf.math.log((1-self.prior_prob)/self.prior_prob)
+    
+    self._bias= -tf.math.log((1 - self._prior_prob) / self._prior_prob)
 
     Conv = nn_blocks.DWConv if depthwise else nn_blocks.BaseConv 
     for k in self._key_list:
       self._stems[k] = nn_blocks.BaseConv(
-          filters=int(256 * width),
-          kernel_size=1,
-          strides=1,
+          filters=int(256 * width_scaling),
+          kernel_size=(1,1),
+          strides=(1,1),
           padding='same', 
           # use_bn = True,
-          activation=act,
+          activation=activation,
       )
 
       self._cls_convs[k] = Sequential(
           [
           Conv(
-            filters=int(256 * width),
-            kernel_size=3,
-            strides=1,
+            filters=int(256 * width_scaling),
+            kernel_size=(3,3),
+            strides=(1,1),
             # use_bn = True,
-            activation=act,
+            activation=activation,
           ),
           Conv(
-            filters=int(256 * width),
-            kernel_size=3,
-            strides=1,
+            filters=int(256 * width_scaling),
+            kernel_size=(3,3),
+            strides=(1,1),
             # use_bn = True,
-            activation=act,
+            activation=activation,
           ),
           ]
         )
@@ -97,43 +115,43 @@ class YOLOXHead(tf.keras.layers.Layer):
       self._reg_convs[k] = Sequential(
           [
             Conv(
-              filters=int(256 * width),
-              kernel_size=3,
-              strides=1,
+              filters=int(256 * width_scaling),
+              kernel_size=(3,3),
+              strides=(1,1),
               # use_bn = True,
-              activation=act,
+              activation=activation,
             ),
             Conv(
-              filters=int(256 * width),
-              kernel_size=3,
-              strides=1,
+              filters=int(256 * width_scaling),
+              kernel_size=(3,3),
+              strides=(1,1),
               # use_bn = True,
-              activation=act,
+              activation=activation,
             ),
           ]
         )
       
       self._cls_preds[k] = tf.keras.layers.Conv2D(
-          filters=self._n_anchors * self._num_classes,
-          kernel_size=1,
-          strides=1,
+          filters=self._boxes_per_level * self._classes,
+          kernel_size=(1,1),
+          strides=(1,1),
           padding='same',
-          bias_initializer=tf.keras.initializers.constant(self.bias)
+          bias_initializer=tf.keras.initializers.constant(self._bias)
         )
       
       self._reg_preds[k] = tf.keras.layers.Conv2D(
           filters=4,
-          kernel_size=1,
-          strides=1,
+          kernel_size=(1,1),
+          strides=(1,1),
           padding='same',
         )
       
       self._obj_preds[k] = tf.keras.layers.Conv2D(
-          filters=self._n_anchors * 1,
-          kernel_size=1,
-          strides=1,
+          filters=self._boxes_per_level * 1,
+          kernel_size=(1,1),
+          strides=(1,1),
           padding='same',
-          bias_initializer=tf.keras.initializers.constant(self.bias)
+          bias_initializer=tf.keras.initializers.constant(self._bias)
         )
 
 
@@ -155,4 +173,3 @@ class YOLOXHead(tf.keras.layers.Layer):
       #TODO flatten
 
     return outputs
-    
