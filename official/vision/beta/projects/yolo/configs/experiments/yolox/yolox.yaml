@@ -19,7 +19,6 @@ task:
         version: vx
         type: regular
     head:
-
       smart_bias: true
     detection_generator:
       box_type:
