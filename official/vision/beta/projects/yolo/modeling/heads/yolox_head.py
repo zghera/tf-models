@@ -43,15 +43,30 @@ class YOLOXHead(tf.keras.layers.Layer):
       in_channels=[256, 512, 1024],
       depthwise=False,
       prior_prob = 1e-2,
-      **kwargs
-  ):
+      **kwargs):
 
+    """YoloX Prediction Head initialization function.
 
-    """
     Args:
-        num_classes: `int`, number of classes per category.
-        act (str): activation type of conv. Defalut value: "silu".
-        depthwise (bool): whether apply depthwise conv in conv branch. Defalut value: False.
+      min_level: `int`, the minimum backbone output level.
+      max_level: `int`, the maximum backbone output level.
+      classes: `int`, number of classes per category.
+      boxes_per_level: `int`, number of boxes to predict per level.
+      output_extras: `int`, number of additional output channels that the head.
+        should predict for non-object detection and non-image classification
+        tasks.
+      norm_momentum: `float`, normalization momentum for the moving average.
+      norm_epsilon: `float`, small float added to variance to avoid dividing by
+        zero.
+      kernel_initializer: kernel_initializer for convolutional layers.
+      kernel_regularizer: tf.keras.regularizers.Regularizer object for Conv2D.
+      bias_regularizer: tf.keras.regularizers.Regularizer object for Conv2d.
+      activation: `str`, the activation function to use typically leaky or mish.
+      smart_bias: `bool`, whether to use smart bias.
+      use_separable_conv: `bool` wether to use separable convs.
+      width_scaling: `float`, factor by which the filters should be scaled
+      depthwise (bool): whether apply depthwise conv in conv branch. Defalut value: False.
+      **kwargs: keyword arguments to be passed.
     """
 
     super().__init__(**kwargs)
@@ -179,6 +194,5 @@ class YOLOXHead(tf.keras.layers.Layer):
         obj_output = self._obj_head[k](inputs[k])
         output=tf.concat([reg_output,obj_output,cls_output], axis = -1)
         outputs[k] = output
-      #TODO flatten
-
+    #Outputs are not flattened here.
     return outputs
