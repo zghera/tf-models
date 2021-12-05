@@ -2,7 +2,7 @@
 # mAP 43.0
 runtime:
   distribution_strategy: 'tpu'
-  mixed_precision_dtype: 'bfloat16'
+  mixed_precision_dtype: 'float32'
 task:
   smart_bias_lr: 0.0
   model:
@@ -63,7 +63,7 @@ task:
   train_data:
     global_batch_size: 64
     dtype: float32
-    input_path: '/readahead/200M/placer/prod/home/tensorflow-performance-data/datasets/coco/train*'
+    input_path: 'gs://cam2-datasets/coco/train*'
     is_training: true
     drop_remainder: true
     seed: 1000
@@ -93,7 +93,7 @@ task:
   validation_data:
     global_batch_size: 8
     dtype: float32
-    input_path: '/readahead/200M/placer/prod/home/tensorflow-performance-data/datasets/coco/val*'
+    input_path: 'gs://cam2-datasets/coco/val*'
     is_training: false
     drop_remainder: true
     parser:
@@ -102,7 +102,7 @@ task:
       use_tie_breaker: true
       anchor_thresh: 0.4
   weight_decay: 0.000
-  init_checkpoint: 'gs://tf_model_garden/vision/yolo/ckpt-15000'
+  init_checkpoint: 'gs://tensorflow2/darknet/cspdarknet53-golden'
   init_checkpoint_modules: 'backbone'
   annotation_file: null
 trainer:

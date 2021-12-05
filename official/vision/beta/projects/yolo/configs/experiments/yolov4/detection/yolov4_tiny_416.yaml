@@ -1,6 +1,6 @@
 runtime:
   distribution_strategy: 'tpu'
-  mixed_precision_dtype: 'bfloat16'
+  mixed_precision_dtype: 'float32'
 task:
   smart_bias_lr: 0.0
   model:
