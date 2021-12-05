@@ -19,7 +19,8 @@ task:
         version: vx
         type: regular
     head:
-      num_classes: 80
+
+      smart_bias: true
     detection_generator:
       box_type:
         'all': anchor_free
