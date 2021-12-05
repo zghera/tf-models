@@ -159,8 +159,7 @@ class YoloLossBase(object, metaclass=abc.ABCMeta):
       # with in that cell.
       obj_mask = tf.ones_like(true_conf)
       iou_ = (1 - self._objectness_smooth) + self._objectness_smooth * iou_max
-      iou_ = tf.where(iou_max > 0, iou_, tf.zeros_like(iou_))
-      true_conf = tf.where(iou_mask, iou_, true_conf)
+      true_conf = tf.where(iou_mask, iou_, tf.zeros_like(iou_))
 
     # Stop gradient so while loop is not tracked.
     obj_mask = tf.stop_gradient(obj_mask)
@@ -301,10 +300,6 @@ class DarknetLoss(YoloLossBase):
 
   def _compute_loss(self, true_counts, inds, y_true, boxes, classes, y_pred):
     """Per FPN path loss logic used for Yolov3, Yolov4, and Yolo-Tiny."""
-    if self._box_type == 'scaled':
-      # Darknet Model Propagates a sigmoid once in back prop so we replicate
-      # that behaviour
-      y_pred = grad_sigmoid(y_pred)
 
     # Generate and store constants and format output.
     shape = tf.shape(true_counts)

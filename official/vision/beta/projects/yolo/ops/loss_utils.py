@@ -472,10 +472,6 @@ def _new_coord_scale_boxes(encoded_boxes, width, height, anchor_grid,
   scaler = tf.convert_to_tensor([height, width, height, width])
   scale_xy = tf.cast(scale_xy, pred_xy.dtype)
 
-  # apply the sigmoid
-  pred_xy = tf.math.sigmoid(pred_xy)
-  pred_wh = tf.math.sigmoid(pred_wh)
-
   # scale the xy offset predictions according to the config
   pred_xy = pred_xy * scale_xy - 0.5 * (scale_xy - 1)
 
@@ -609,6 +605,7 @@ def get_predicted_box(width,
     # if we are using the darknet loss we shoud nto propagate the
     # decoding of the box
     if box_type == 'scaled':
+      encoded_boxes = tf.math.sigmoid(encoded_boxes)
       (scaler, scaled_box,
        pred_box) = _darknet_new_coord_boxes(encoded_boxes, width, height,
                                             anchor_grid, grid_points, max_delta,
@@ -621,6 +618,7 @@ def get_predicted_box(width,
     # if we are using the scaled loss we should propagate the decoding of
     # the boxes
     if box_type == 'scaled':
+      encoded_boxes = tf.math.sigmoid(encoded_boxes)
       (scaler, scaled_box,
        pred_box) = _new_coord_scale_boxes(encoded_boxes, width, height,
                                           anchor_grid, grid_points, scale_xy)

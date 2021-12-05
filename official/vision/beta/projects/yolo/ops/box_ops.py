@@ -226,6 +226,37 @@ def compute_diou(box1, box2, beta=1.0, yxyx=False):
   return iou, diou
 
 
+
+def _compute_v_auto_grad(gt_width, gt_height, pred_width, pred_height):
+  # Computer aspect ratio consistency
+  terma = math_ops.divide_no_nan(gt_width, gt_height)  # gt
+  termb = math_ops.divide_no_nan(pred_width, pred_height)  # pred
+  arcterm = tf.squeeze(
+      tf.math.pow(tf.math.atan(termb) - tf.math.atan(terma), 2), axis=-1)
+  v = (4 / math.pi**2) * arcterm
+  return v
+
+@tf.custom_gradient
+def _compute_v_manual_grad(gt_width, gt_height, pred_width, pred_height):
+  v = _compute_v_auto_grad(gt_width, gt_height, pred_width, pred_height)
+
+  def delta(dv):
+    terma = math_ops.divide_no_nan(gt_width, gt_height)  # gt
+    termb = math_ops.divide_no_nan(pred_width, pred_height)  # pred
+    arcterm = tf.squeeze(tf.math.atan(termb) - tf.math.atan(terma), axis=-1)
+
+    dv_dw = (8 / math.pi**2) * arcterm * pred_height
+    dv_dh = (8 / math.pi**2) * arcterm * pred_width
+    return 0, 0, dv_dw, dv_dh 
+  return v, delta
+
+def _compute_v(gt_width, gt_height, pred_width, pred_height, manual = False):
+  if not manual:
+    v = _compute_v_auto_grad(gt_width, gt_height, pred_width, pred_height)
+  else:
+    v = _compute_v_manual_grad(gt_width, gt_height, pred_width, pred_height)
+  return v
+
 def compute_ciou(box1, box2, yxyx=False, darknet=False):
   """Calculates the complete intersection over union between box1 and box2.
 
@@ -267,18 +298,19 @@ def compute_ciou(box1, box2, yxyx=False, darknet=False):
     regularization = math_ops.divide_no_nan(center_dist, c_diag)
 
     # Computer aspect ratio consistency
-    terma = math_ops.divide_no_nan(b1w, b1h)  # gt
-    termb = math_ops.divide_no_nan(b2w, b2h)  # pred
-    arcterm = tf.squeeze(
-        tf.math.pow(tf.math.atan(termb) - tf.math.atan(terma), 2), axis=-1)
-    v = (4 / math.pi**2) * arcterm
+    # terma = math_ops.divide_no_nan(b1w, b1h)  # gt
+    # termb = math_ops.divide_no_nan(b2w, b2h)  # pred
+    # arcterm = tf.squeeze(
+    #     tf.math.pow(tf.math.atan(termb) - tf.math.atan(terma), 2), axis=-1)
+    # v = (4 / math.pi**2) * arcterm
+    v = _compute_v(b1w, b1h, b2w, b2h, manual=darknet)
 
     # Compute the aspect ratio weight, should be treated as a constant
     a = tf.stop_gradient(math_ops.divide_no_nan(v, 1 - iou + v))
 
-    if darknet:
-      grad_scale = tf.stop_gradient(tf.square(b2w) + tf.square(b2h))
-      v *= tf.squeeze(grad_scale, axis=-1)
+    # if darknet:
+    #   grad_scale = tf.stop_gradient(tf.square(b2w) + tf.square(b2h))
+    #   v *= tf.squeeze(grad_scale, axis=-1)
 
     ciou = iou - regularization - (v * a)
   return iou, ciou
