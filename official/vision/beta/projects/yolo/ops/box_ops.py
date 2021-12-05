@@ -305,7 +305,7 @@ def compute_ciou(box1, box2, yxyx=False, darknet=False):
     c_diag = tf.reduce_sum(bchw**2, axis=-1)
     regularization = math_ops.divide_no_nan(center_dist, c_diag)
 
-    # Computer aspect ratio consistency
+    # Compute aspect ratio consistency
     # terma = math_ops.divide_no_nan(b1w, b1h)  # gt
     # termb = math_ops.divide_no_nan(b2w, b2h)  # pred
     # arcterm = tf.squeeze(
