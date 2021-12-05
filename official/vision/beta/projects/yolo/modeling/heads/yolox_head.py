@@ -18,7 +18,6 @@ from loguru import logger
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from official.vision.beta.projects.yolo.modeling.layers import nn_blocks
-from tensorflow.keras.layers import Concatenate
 from official.vision.beta.projects.yolo.ops import box_ops
 
 class YOLOXHead(tf.keras.layers.Layer):
@@ -136,39 +135,49 @@ class YOLOXHead(tf.keras.layers.Layer):
           kernel_size=(1,1),
           strides=(1,1),
           padding='same',
-          bias_initializer=tf.keras.initializers.constant(self._bias)
-        )
+          bias_initializer=tf.keras.initializers.constant(self._bias))
       
       self._reg_preds[k] = tf.keras.layers.Conv2D(
           filters=4,
           kernel_size=(1,1),
           strides=(1,1),
-          padding='same',
-        )
+          padding='same')
       
       self._obj_preds[k] = tf.keras.layers.Conv2D(
           filters=self._boxes_per_level * 1,
           kernel_size=(1,1),
           strides=(1,1),
           padding='same',
-          bias_initializer=tf.keras.initializers.constant(self._bias)
-        )
+          bias_initializer=tf.keras.initializers.constant(self._bias))
 
+  def build(self, input_shape):
+    self._cls_head = dict()
+    self._obj_head = dict()
+    self._reg_head = dict()
+
+    for key in self._key_list:
+      self._cls_head[key] = Sequential()
+      self._cls_head[key].add(self._stems[key])
+      self._cls_head[key].add(self._cls_convs[key])
+      self._cls_head[key].add(self._cls_preds[key])
+
+      self._obj_head[key] = Sequential()
+      self._obj_head[key].add(self._stems[key])
+      self._obj_head[key].add(self._reg_convs[key])
+      self._obj_head[key].add(self._obj_preds[key])
+
+      self._reg_head[key] = Sequential()
+      self._reg_head[key].add(self._stems[key])
+      self._reg_head[key].add(self._reg_convs[key])
+      self._reg_head[key].add(self._reg_preds[key])
 
   def call(self, inputs, *args, **kwargs):
     outputs=dict()
     for k in self._key_list:    
-        x = self._stems[k](inputs[k])
-        cls_x = x
-        reg_x = x
-
-        cls_feat = self._cls_convs[k](cls_x)
-        cls_output = self._cls_preds[k](cls_feat)
-
-        reg_feat = self._reg_convs[k](reg_x)
-        reg_output = self._reg_preds[k](reg_feat)
-        obj_output = self._obj_preds[k](reg_feat)
-        output=Concatenate(-1)([reg_output,obj_output,cls_output])
+        cls_output = self._cls_head[k](inputs[k])
+        reg_output = self._reg_head[k](inputs[k])
+        obj_output = self._obj_head[k](inputs[k])
+        output=tf.concat([reg_output,obj_output,cls_output], axis = -1)
         outputs[k] = output
       #TODO flatten
 
