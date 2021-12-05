@@ -106,6 +106,9 @@ task:
   init_checkpoint_modules: 'backbone'
   annotation_file: null
 trainer:
+  best_checkpoint_eval_metric: 'AP'
+  best_checkpoint_export_subdir: 'best_ckpt'
+  best_checkpoint_metric_comp: 'higher'
   train_steps: 555000
   validation_steps: 625
   steps_per_loop: 1850
