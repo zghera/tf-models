@@ -247,8 +247,8 @@ def _compute_v_manual_grad(gt_width, gt_height, pred_width, pred_height):
     arcterm = tf.math.atan(termb) - tf.math.atan(terma)
 
     dv = tf.expand_dims(dv, axis = -1)
-    dv_dw = dv * (8 / math.pi**2) * arcterm * pred_height
-    dv_dh = -dv * (8 / math.pi**2) * arcterm * pred_width
+    dv_dw = -dv * (8 / math.pi**2) * arcterm * pred_height
+    dv_dh = dv * (8 / math.pi**2) * arcterm * pred_width
     return 0, 0, dv_dw, dv_dh 
   return v, delta
 
