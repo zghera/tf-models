@@ -134,12 +134,13 @@ class DataConfig(cfg.DataConfig):
 @dataclasses.dataclass
 class YOLOXHead(hyperparams.Config):
   """Parameterization for the YOLOX Head."""
-  num_classes: int = None
+  #classes: int = None
   width: float = 1.0
   # strides: List[int] = [8, 16, 32]
   # in_channels: List[int] = [256, 512, 1024]
   depthwise: bool = False
   activation: str = 'silu'
+  smart_bias: bool = True
 
 
 @dataclasses.dataclass
@@ -291,7 +292,7 @@ def yolox_regular() -> cfg.ExperimentConfig:
           model=YOLOX(
               darknet_based_model=True,
               norm_activation=common.NormActivation(use_sync_bn=True),
-              head=YOLOXHead(num_classes=80),
+              head=YOLOXHead(smart_bias=True),
               loss=YoloLoss(use_scaled_loss=False, update_on_repeat=True),
               anchor_boxes=AnchorBoxes(
                   anchors_per_scale=3,
