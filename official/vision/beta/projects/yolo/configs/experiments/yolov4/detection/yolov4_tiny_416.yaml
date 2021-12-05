@@ -114,9 +114,9 @@ trainer:
     learning_rate:
       type: stepwise
       stepwise:
-        boundaries: [200000, 225000]
+        boundaries: [200000]
         name: PiecewiseConstantDecay
-        values: [0.02088, 0.002088, 0.0002088]
+        values: [0.02088, 0.002088]
     optimizer:
       type: sgd_torch
       sgd_torch:
