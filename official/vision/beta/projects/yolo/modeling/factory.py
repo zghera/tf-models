@@ -67,16 +67,19 @@ def build_yolo_head(input_specs, model_config: yolo.Yolo, l2_regularization):
       smart_bias=model_config.head.smart_bias)
   return head
 
-def build_yolox_head(input_specs, model_config: yolox.yolox):
+def build_yolox_head(input_specs, model_config: yolox.yolox, l2_regularization):
   """Builds yolo head."""
+  min_level = min(map(int, input_specs.keys()))
+  max_level = max(map(int, input_specs.keys()))
   head = yolox_head.YOLOXHead(
-      num_classes=model_config.num_classes,
-      # boxes_per_level=model_config.anchor_boxes.anchors_per_scale,
-      # norm_momentum=model_config.norm_activation.norm_momentum,
-      # norm_epsilon=model_config.norm_activation.norm_epsilon,
-      # kernel_regularizer=l2_regularization,
-      # smart_bias=model_config.head.smart_bias
-      )
+      min_level=min_level,
+      max_level=max_level,
+      classes=model_config.num_classes,
+      boxes_per_level=model_config.anchor_boxes.anchors_per_scale,
+      norm_momentum=model_config.norm_activation.norm_momentum,
+      norm_epsilon=model_config.norm_activation.norm_epsilon,
+      kernel_regularizer=l2_regularization,
+      smart_bias=model_config.head.smart_bias)
   return head
 
 
@@ -118,7 +121,7 @@ def build_yolox(input_specs, model_config, l2_regularization):
   decoder = decoder_factory.build_decoder(backbone.output_specs, model_config,
                                           l2_regularization)
 
-  head = build_yolox_head(decoder.output_specs, model_config)
+  head = build_yolox_head(decoder.output_specs, model_config, l2_regularization)
   detection_generator_obj = build_yolo_detection_generator(model_config,
                                                            anchor_dict)
 
