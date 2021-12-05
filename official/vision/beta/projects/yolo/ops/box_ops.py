@@ -228,7 +228,7 @@ def compute_diou(box1, box2, beta=1.0, yxyx=False):
 
 
 def _compute_v_auto_grad(gt_width, gt_height, pred_width, pred_height):
-  # Computer aspect ratio consistency
+  """Computer aspect ratio consistency for ciou loss."""
   terma = math_ops.divide_no_nan(gt_width, gt_height)  # gt
   termb = math_ops.divide_no_nan(pred_width, pred_height)  # pred
   arcterm = tf.squeeze(
@@ -238,23 +238,26 @@ def _compute_v_auto_grad(gt_width, gt_height, pred_width, pred_height):
 
 @tf.custom_gradient
 def _compute_v_manual_grad(gt_width, gt_height, pred_width, pred_height):
+  """Computer aspect ratio for boxes in range [0, 1]."""
   v = _compute_v_auto_grad(gt_width, gt_height, pred_width, pred_height)
 
   def delta(dv):
     terma = math_ops.divide_no_nan(gt_width, gt_height)  # gt
     termb = math_ops.divide_no_nan(pred_width, pred_height)  # pred
-    arcterm = tf.squeeze(tf.math.atan(termb) - tf.math.atan(terma), axis=-1)
+    arcterm = tf.math.atan(termb) - tf.math.atan(terma)
 
-    dv_dw = (8 / math.pi**2) * arcterm * pred_height
-    dv_dh = (8 / math.pi**2) * arcterm * pred_width
+    dv = tf.expand_dims(dv, axis = -1)
+    dv_dw = dv * (8 / math.pi**2) * arcterm * pred_height
+    dv_dh = dv * (8 / math.pi**2) * arcterm * pred_width
     return 0, 0, dv_dw, dv_dh 
   return v, delta
 
 def _compute_v(gt_width, gt_height, pred_width, pred_height, manual = False):
-  if not manual:
-    v = _compute_v_auto_grad(gt_width, gt_height, pred_width, pred_height)
-  else:
+  """Computer aspect ratio consistency for ciou loss."""
+  if manual:
     v = _compute_v_manual_grad(gt_width, gt_height, pred_width, pred_height)
+  else:
+    v = _compute_v_auto_grad(gt_width, gt_height, pred_width, pred_height)
   return v
 
 def compute_ciou(box1, box2, yxyx=False, darknet=False):
