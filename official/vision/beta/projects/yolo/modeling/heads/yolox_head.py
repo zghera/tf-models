@@ -196,3 +196,16 @@ class YOLOXHead(tf.keras.layers.Layer):
         outputs[k] = output
     #Outputs are not flattened here.
     return outputs
+
+  def get_config(self):
+      config = dict(
+          min_level=self._min_level,
+          max_level=self._max_level,
+          classes=self._classes,
+          boxes_per_level=self._boxes_per_level,
+          output_extras=self._output_extras)
+      return config
+
+  @classmethod
+  def from_config(cls, config, custom_objects=None):
+    return cls(**config)
