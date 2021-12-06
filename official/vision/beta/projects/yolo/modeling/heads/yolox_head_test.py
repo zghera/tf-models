@@ -18,8 +18,7 @@
 # Import libraries
 from absl.testing import parameterized
 import tensorflow as tf
-import sys
-sys.path.append("/content/tf-models")
+
 from official.vision.beta.projects.yolo.modeling.heads import yolox_head as heads
 
 
