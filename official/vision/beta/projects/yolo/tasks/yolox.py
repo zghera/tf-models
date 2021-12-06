@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Contains classes used to train Yolo."""
+"""Contains classes used to train Yolox."""
 
 import collections
 from typing import Optional
@@ -46,7 +46,7 @@ RuntimeConfig = config_definitions.RuntimeConfig
 class YOLOXTask(base_task.Task):
   """A single-replica view of training procedure.
 
-  YOLO task provides artifacts for training/evalution procedures, including
+  YOLOX task provides artifacts for training/evalution procedures, including
   loading/iterating over Datasets, initializing the model, calculating the loss,
   post-processing, and customized metrics with reduction.
   """
@@ -64,7 +64,7 @@ class YOLOXTask(base_task.Task):
     return
 
   def build_model(self):
-    """Build an instance of Yolo."""
+    """Build an instance of Yolox."""
 
     model_base_cfg = self.task_config.model
     l2_weight_decay = self.task_config.weight_decay / 2.0
@@ -202,7 +202,7 @@ class YOLOXTask(base_task.Task):
     return metrics
 
   def build_losses(self, outputs, labels, aux_losses=None):
-    """Build YOLO losses."""
+    """Build YOLOX losses."""
     return self._loss_fn(labels, outputs)
 
   def train_step(self, inputs, model, optimizer, metrics=None):
