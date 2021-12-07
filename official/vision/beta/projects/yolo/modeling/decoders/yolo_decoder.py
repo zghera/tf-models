@@ -50,8 +50,8 @@ YOLO_MODELS = {
                 max_level_process_len=None,
                 csp_stack=7,
                 fpn_depth=7,
-                max_fpn_depth=5, 
-                max_csp_stack=5, 
+                max_fpn_depth=5,
+                max_csp_stack=5,
                 path_process_len=8,
                 fpn_filter_scale=1),
             csp_xlarge=dict(
@@ -84,7 +84,7 @@ YOLO_MODELS = {
     'vx':
         dict(
             regular=dict(
-              embed_spp=True,
+                embed_spp=True,
                 use_fpn=False,
                 max_level_process_len=None,
                 path_process_len=5),

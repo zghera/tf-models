@@ -27,7 +27,7 @@ class YOLOXHead(hyperparams.Config):
   and use version and name defaults.
   """
   num_classes: Optional[str] = None
-  width: Optional[str] =1.0
+  width: Optional[str] = 1.0
   strides: Optional[str] = [8, 16, 32]
   in_channels: Optional[str] = [256, 512, 1024]
   depthwise: Optional[str] = False
