@@ -21,8 +21,8 @@ from official.modeling import tf_utils
 from official.vision.beta.ops import spatial_transform_ops
 import tensorflow.keras.backend as K
 from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Layer,Conv2D,LeakyReLU,\
-    MaxPool2D,UpSampling2D,Activation,ReLU,BatchNormalization,concatenate
+from tensorflow.keras.layers import Layer, Conv2D, LeakyReLU, \
+    MaxPool2D, UpSampling2D, Activation, ReLU, BatchNormalization, concatenate
 
 @tf.keras.utils.register_keras_serializable(package='yolo')
 class Identity(tf.keras.layers.Layer):
@@ -1731,10 +1731,10 @@ class Reorg(tf.keras.layers.Layer):
 
 class SiLU(Layer):
     def __init__(self, *args, **kwargs):
-        super(SiLU,self).__init__(*args, **kwargs)
+        super(SiLU, self).__init__(*args, **kwargs)
 
-    def call(self,x,**kwargs):
-        return x*K.sigmoid(x)
+    def call(self, x, **kwargs):
+        return x * K.sigmoid(x)
 
     def get_config(self):
         config = super(SiLU, self).get_config()
@@ -1743,54 +1743,66 @@ class SiLU(Layer):
     def compute_output_shape(self, input_shape):
         return input_shape
 
-def get_activation(name="silu", ):
+def get_activation(name="silu"):
     if name == "silu":
         module = SiLU()
     elif name == "relu":
         module = ReLU()
     elif name == "lrelu":
-        module = LeakyReLU(0.1 )
+        module = LeakyReLU(0.1)
     else:
         raise AttributeError("Unsupported act type: {}".format(name))
     return module
 
 class BaseConv(tf.keras.layers.Layer):
-    def __init__(self,filters, kernel_size, strides=1,padding='same',groups=1,use_bias=False, apply_batchnorm=True, activation="silu"):
+    def __init__(self,
+                filters,
+                kernel_size,
+                strides=1,
+                padding='same',
+                groups=1,
+                use_bias=False,
+                apply_batchnorm=True,
+                activation="silu"):
         super(BaseConv, self).__init__()
-        self.conv=Conv2D(filters,kernel_size=kernel_size,padding=padding,strides=strides,groups=groups,
-                         use_bias=use_bias,
-                         )
+        self.conv = Conv2D(filters,
+                           kernel_size=kernel_size,
+                           padding=padding,
+                           strides=strides,
+                           groups=groups,
+                           use_bias=use_bias,
+                          )
         self.apply_batchnorm=apply_batchnorm
-        self.bn=BatchNormalization(momentum=0.03,epsilon=1e-3)
-        self.activation=get_activation(activation)
+        self.bn = BatchNormalization(momentum=0.03, epsilon=1e-3)
+        self.activation = get_activation(activation)
 
     def call(self,inputs,**kwargs):
-        x=self.conv(inputs)
+        x = self.conv(inputs)
         if self.apply_batchnorm:
-            x=self.bn(x)
-        x=self.activation(x)
+            x = self.bn(x)
+        x = self.activation(x)
 
         return x
 
 class DWConv(tf.keras.layers.Layer):
-  def __init__ (self, 
-                filters, 
-                kernel_size, 
-                strides=1, 
-                padding='valid', # TODO: need to make sure this is correct
+  def __init__ (self,
+                filters,
+                kernel_size,
+                strides=1,
+                padding='valid',# TODO: need to make sure this is correct
                 groups=1,
                 use_biase=False,
                 use_bn=True,
                 activation='silu',
                 **kwargs):
     super().__init__(**kwargs)
-    self._conv1 = ConvBN(filters, 
-                      kernel_size, 
+    self._conv1 = ConvBN(filters,
+                      kernel_size,
                       strides=strides,
                       use_bn=use_bn,
                       activation=activation)
-    self._conv2 = ConvBN(filters, 
-                      kernel_size=1, 
+    self._conv2 = ConvBN(filters,
+                      kernel_size=1,
                       strides=1,
                       use_bn=use_bn,
                       activation=activation)

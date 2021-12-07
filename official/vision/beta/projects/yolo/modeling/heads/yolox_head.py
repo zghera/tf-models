@@ -202,7 +202,7 @@ class YOLOXHead(tf.keras.layers.Layer):
 
   def call(self, inputs, *args, **kwargs):
     outputs = dict()
-    for k in self._key_list:   
+    for k in self._key_list:
         cls_output = self._cls_head[k](inputs[k])
         reg_output = self._reg_head[k](inputs[k])
         obj_output = self._obj_head[k](inputs[k])
