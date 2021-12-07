@@ -215,7 +215,7 @@ class YoloFPN(tf.keras.layers.Layer):
 
     for level, depth in zip(
         reversed(range(self._min_level, self._max_level + 1)), self._depths):
-     
+
       if level == self._min_level:
         self.resamples[str(level)] = nn_blocks.PathAggregationBlock(
             filters=depth // 2,

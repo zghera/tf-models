@@ -1729,27 +1729,26 @@ class Reorg(tf.keras.layers.Layer):
                      axis=-1)
 
 class SiLU(Layer):
-    def __init__(self, *args, **kwargs):
-        super(SiLU, self).__init__(*args, **kwargs)
+  def __init__(self, *args, **kwargs):
+    super(SiLU, self).__init__(*args, **kwargs)
 
-    def call(self, x, **kwargs):
-        return x * K.sigmoid(x)
+  def call(self, x, **kwargs):
+    return x * K.sigmoid(x)
 
-    def get_config(self):
-        config = super(SiLU, self).get_config()
-        return config
+  def get_config(self):
+    config = super(SiLU, self).get_config()
+    return config
 
-    def compute_output_shape(self, input_shape):
-        return input_shape
+  def compute_output_shape(self, input_shape):
+    return input_shape
 
 def get_activation(name="silu"):
-    if name == "silu":
-        module = SiLU()
-    elif name == "relu":
-        module = ReLU()
-    elif name == "lrelu":
-        module = LeakyReLU(0.1)
-    else:
-        raise AttributeError("Unsupported act type: {}".format(name))
-    return module
-    
+  if name == "silu":
+    module = SiLU()
+  elif name == "relu":
+    module = ReLU()
+  elif name == "lrelu":
+    module = LeakyReLU(0.1)
+  else:
+    raise AttributeError("Unsupported act type: {}".format(name))
+  return module

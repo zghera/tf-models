@@ -64,7 +64,7 @@ class YOLOXHead(tf.keras.layers.Layer):
       smart_bias: `bool`, whether to use smart bias.
       use_separable_conv: `bool` wether to use separable convs.
       width_scaling: `float`, factor by which the filters should be scaled
-      depthwise (bool): whether apply depthwise conv in conv branch. 
+      depthwise (bool): whether apply depthwise conv in conv branch.
                         Default value: False.
       **kwargs: keyword arguments to be passed.
     """
@@ -125,44 +125,44 @@ class YOLOXHead(tf.keras.layers.Layer):
       self._cls_convs[k] = Sequential(
           [
               nn_blocks.ConvBN(
-                filters=int(256 * self._width_scaling),
-                kernel_size=(3, 3),
-                strides=(1, 1),
-                use_bn=True,
-                use_separable_conv=self._use_separable_conv,
-                **self._base_config,
-            ),
+                  filters=int(256 * self._width_scaling),
+                  kernel_size=(3, 3),
+                  strides=(1, 1),
+                  use_bn=True,
+                  use_separable_conv=self._use_separable_conv,
+                  **self._base_config,
+              ),
               nn_blocks.ConvBN(
-                filters=int(256 * self._width_scaling),
-                kernel_size=(3, 3),
-                strides=(1, 1),
-                use_bn=True,
-                use_separable_conv=self._use_separable_conv,
-                **self._base_config,
-            ),
+                  filters=int(256 * self._width_scaling),
+                  kernel_size=(3, 3),
+                  strides=(1, 1),
+                  use_bn=True,
+                  use_separable_conv=self._use_separable_conv,
+                  **self._base_config,
+              ),
           ]
-        )
+      )
 
       self._reg_convs[k] = Sequential(
           [
-            nn_blocks.ConvBN(
-              filters=int(256 * self._width_scaling),
-              kernel_size=(3, 3),
-              strides=(1, 1),
-              use_bn=True,
-              use_separable_conv=self._use_separable_conv,
-              **self._base_config,
-            ),
-            nn_blocks.ConvBN(
-              filters=int(256 * self._width_scaling),
-              kernel_size=(3, 3),
-              strides=(1, 1),
-              use_bn=True,
-              use_separable_conv=self._use_separable_conv,
-              **self._base_config,
-            ),
+              nn_blocks.ConvBN(
+                  filters=int(256 * self._width_scaling),
+                  kernel_size=(3, 3),
+                  strides=(1, 1),
+                  use_bn=True,
+                  use_separable_conv=self._use_separable_conv,
+                  **self._base_config,
+              ),
+              nn_blocks.ConvBN(
+                  filters=int(256 * self._width_scaling),
+                  kernel_size=(3, 3),
+                  strides=(1, 1),
+                  use_bn=True,
+                  use_separable_conv=self._use_separable_conv,
+                  **self._base_config,
+              ),
           ]
-        )
+      )
 
       self._cls_preds[k] = tf.keras.layers.Conv2D(
           filters=self._boxes_per_level * self._classes,
@@ -203,11 +203,11 @@ class YOLOXHead(tf.keras.layers.Layer):
   def call(self, inputs, *args, **kwargs):
     outputs = dict()
     for k in self._key_list:
-        cls_output = self._cls_head[k](inputs[k])
-        reg_output = self._reg_head[k](inputs[k])
-        obj_output = self._obj_head[k](inputs[k])
-        output = tf.concat([reg_output, obj_output, cls_output], axis=-1)
-        outputs[k] = output
+      cls_output = self._cls_head[k](inputs[k])
+      reg_output = self._reg_head[k](inputs[k])
+      obj_output = self._obj_head[k](inputs[k])
+      output = tf.concat([reg_output, obj_output, cls_output], axis=-1)
+      outputs[k] = output
     #Outputs are not flattened here.
     return outputs
 

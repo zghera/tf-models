@@ -258,13 +258,13 @@ class YOLOXTask(base_task.Task):
   def _reorg_boxes(self, boxes, info, num_detections):
     """Scale and Clean boxes prior to Evaluation."""
     mask = tf.sequence_mask(num_detections, maxlen=tf.shape(boxes)[1])
-    mask = tf.cast(tf.expand_dims(mask, axis = -1), boxes.dtype)
+    mask = tf.cast(tf.expand_dims(mask, axis=-1), boxes.dtype)
 
     # Denormalize the boxes by the shape of the image
-    inshape = tf.expand_dims(info[:, 1, :], axis = 1)
-    ogshape = tf.expand_dims(info[:, 0, :], axis = 1)
-    scale = tf.expand_dims(info[:, 2, :], axis = 1)
-    offset = tf.expand_dims(info[:, 3, :], axis = 1)
+    inshape = tf.expand_dims(info[:, 1, :], axis=1)
+    ogshape = tf.expand_dims(info[:, 0, :], axis=1)
+    scale = tf.expand_dims(info[:, 2, :], axis=1)
+    offset = tf.expand_dims(info[:, 3, :], axis=1)
 
     boxes = box_ops.denormalize_boxes(boxes, inshape)
     boxes = box_ops.clip_boxes(boxes, inshape)
