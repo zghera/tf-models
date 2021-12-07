@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from loguru import logger
 """Contains common building blocks for yolo neural networks."""
 from typing import Callable, List, Tuple
 
@@ -1753,63 +1752,4 @@ def get_activation(name="silu"):
     else:
         raise AttributeError("Unsupported act type: {}".format(name))
     return module
-
-class BaseConv(tf.keras.layers.Layer):
-    def __init__(self,
-                filters,
-                kernel_size,
-                strides=1,
-                padding='same',
-                groups=1,
-                use_bias=False,
-                apply_batchnorm=True,
-                activation="silu"):
-        super(BaseConv, self).__init__()
-        self.conv = Conv2D(filters,
-                           kernel_size=kernel_size,
-                           padding=padding,
-                           strides=strides,
-                           groups=groups,
-                           use_bias=use_bias,
-                          )
-        self.apply_batchnorm=apply_batchnorm
-        self.bn = BatchNormalization(momentum=0.03, epsilon=1e-3)
-        self.activation = get_activation(activation)
-
-    def call(self,inputs,**kwargs):
-        x = self.conv(inputs)
-        if self.apply_batchnorm:
-            x = self.bn(x)
-        x = self.activation(x)
-
-        return x
-
-class DWConv(tf.keras.layers.Layer):
-  def __init__ (self,
-                filters,
-                kernel_size,
-                strides=1,
-                padding='valid',# TODO: need to make sure this is correct
-                groups=1,
-                use_biase=False,
-                use_bn=True,
-                activation='silu',
-                **kwargs):
-    super().__init__(**kwargs)
-    self._conv1 = ConvBN(filters,
-                      kernel_size,
-                      strides=strides,
-                      use_bn=use_bn,
-                      activation=activation)
-    self._conv2 = ConvBN(filters,
-                      kernel_size=1,
-                      strides=1,
-                      use_bn=use_bn,
-                      activation=activation)
-
-  def call(self, inputs, **kwargs):
-    x = self._conv1(inputs)
-    x = self._conv2(x)
-    return x
-
     
