@@ -130,7 +130,7 @@ def build_yolox(input_specs, model_config, l2_regularization):
       decoder=decoder,
       head=head,
       detection_generator=detection_generator_obj)
- 
+
   # from tensorflow.keras import Input
   # from tensorflow.keras import Model
   # h, w = (640,640)

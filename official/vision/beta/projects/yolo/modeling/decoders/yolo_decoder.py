@@ -110,8 +110,8 @@ class YoloFPN(tf.keras.layers.Layer):
 
   def __init__(self,
                fpn_depth=4,
-               max_fpn_depth=None, 
-               max_csp_stack=None, 
+               max_fpn_depth=None,
+               max_csp_stack=None,
                use_spatial_attention=False,
                csp_stack=False,
                activation='leaky',
@@ -215,7 +215,7 @@ class YoloFPN(tf.keras.layers.Layer):
 
     for level, depth in zip(
         reversed(range(self._min_level, self._max_level + 1)), self._depths):
-      
+     
       if level == self._min_level:
         self.resamples[str(level)] = nn_blocks.PathAggregationBlock(
             filters=depth // 2,
@@ -464,8 +464,8 @@ class YoloDecoder(tf.keras.Model):
                use_spatial_attention=False,
                csp_stack=False,
                fpn_depth=4,
-               max_fpn_depth=None, 
-               max_csp_stack=None, 
+               max_fpn_depth=None,
+               max_csp_stack=None,
                fpn_filter_scale=1,
                path_process_len=6,
                max_level_process_len=None,
@@ -553,7 +553,7 @@ class YoloDecoder(tf.keras.Model):
     }
     if self._use_fpn:
       inter_outs = YoloFPN(
-          fpn_depth=self._fpn_depth, 
+          fpn_depth=self._fpn_depth,
           max_fpn_depth=self._max_fpn_depth,
           max_csp_stack=self._max_csp_stack,
           **self._base_config)(inputs)
