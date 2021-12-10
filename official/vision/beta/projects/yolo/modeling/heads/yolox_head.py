@@ -16,6 +16,7 @@
 """Yolox heads."""
 from loguru import logger
 import tensorflow as tf
+
 from tensorflow.keras.models import Sequential
 from official.vision.beta.projects.yolo.modeling.layers import nn_blocks
 from official.vision.beta.projects.yolo.ops import box_ops
@@ -202,11 +203,19 @@ class YOLOXHead(tf.keras.layers.Layer):
 
   def call(self, inputs, *args, **kwargs):
     outputs = dict()
+
     for k in self._key_list:
+      ordered_preds = []
       cls_output = self._cls_head[k](inputs[k])
       reg_output = self._reg_head[k](inputs[k])
       obj_output = self._obj_head[k](inputs[k])
-      output = tf.concat([reg_output, obj_output, cls_output], axis=-1)
+
+      for b in range(self._boxes_per_level):
+        ordered_preds.append(reg_output[:,:,:,4 * b: 4 * (b + 1)])
+        ordered_preds.append(obj_output[:,:,:,b: b + 1])
+        ordered_preds.append(cls_output[:,:,:,self._classes * b: self._classes * (b + 1)])
+      
+      output = tf.concat(ordered_preds, axis=-1)
       outputs[k] = output
     #Outputs are not flattened here.
     return outputs
