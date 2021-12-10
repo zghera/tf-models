@@ -33,7 +33,7 @@ class YoloDecoderTest(parameterized.TestCase, tf.test.TestCase):
         '5': [1, 13, 13, 1024]
     }
     classes = 100
-    bps = 1
+    bps = 3
     head = heads.YOLOXHead(3, 5, classes=classes, boxes_per_level=bps)
 
     inputs = {}
@@ -57,7 +57,7 @@ class YoloDecoderTest(parameterized.TestCase, tf.test.TestCase):
         '5': [1, 13, 13, 1024]
     }
     classes = 100
-    bps = 1
+    bps = 3
     head = heads.YOLOXHead(3, 5, classes=classes, boxes_per_level=bps)
 
     inputs = {}
