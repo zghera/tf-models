@@ -40,8 +40,6 @@ class YOLOXHead(tf.keras.layers.Layer):
       smart_bias=False,
       use_separable_conv=False,
       width_scaling=1.0,
-      strides=[8, 16, 32],
-      in_channels=[256, 512, 1024],
       prior_prob=1e-2,
       **kwargs):
 
@@ -61,12 +59,12 @@ class YOLOXHead(tf.keras.layers.Layer):
       kernel_initializer: kernel_initializer for convolutional layers.
       kernel_regularizer: tf.keras.regularizers.Regularizer object for Conv2D.
       bias_regularizer: tf.keras.regularizers.Regularizer object for Conv2d.
-      activation: `str`, the activation function to use typically leaky or mish.
+      activation: `str`, the activation function to use. Default value: "silu".
       smart_bias: `bool`, whether to use smart bias.
       use_separable_conv: `bool` wether to use separable convs.
-      width_scaling: `float`, factor by which the filters should be scaled
-      depthwise (bool): whether apply depthwise conv in conv branch.
-                        Default value: False.
+      width_scaling: `float`, factor by which the filters should be scaled.
+      prior_prob: 'float', prior probability of custom value between 0.0 and 1. 
+        Defaults to 1e-2.
       **kwargs: keyword arguments to be passed.
     """
 
