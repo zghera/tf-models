@@ -364,7 +364,7 @@ class Parser(parser.Parser):
           'areas':
               data['groundtruth_area'],
           'is_crowds':
-              tf.cast(tf.gather(data['groundtruth_is_crowd'], inds), tf.int32),
+              tf.cast(data['groundtruth_is_crowd'], tf.int32),
       }
       groundtruths['source_id'] = utils.process_source_id(
           groundtruths['source_id'])

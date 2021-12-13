@@ -100,7 +100,7 @@ trainer:
   best_checkpoint_eval_metric: 'AP'
   best_checkpoint_export_subdir: 'best_ckpt'
   best_checkpoint_metric_comp: 'higher'
-  train_steps: 250025
+  train_steps: 276563
   validation_steps: 625
   steps_per_loop: 920 #230
   summary_interval: 920 #230
@@ -114,7 +114,7 @@ trainer:
     learning_rate:
       type: stepwise
       stepwise:
-        boundaries: [200000]
+        boundaries: [221250]
         name: PiecewiseConstantDecay
         values: [0.02088, 0.002088]
     optimizer:
