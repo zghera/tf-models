@@ -11,7 +11,7 @@ task:
     backbone:
       type: 'darknet'
       darknet:
-        model_id: 'darknet53'
+        model_id: 'cspdarknet53'
         max_level: 5
         min_level: 3
     decoder:
