@@ -77,16 +77,16 @@ trainer:
       cosine:
         initial_learning_rate: 0.1
         decay_steps: 831600 # epoch 300 to 450 
-  optimizer:
-    type: sgd_torch
-    sgd_torch:
-      momentum: 0.9
-      momentum_start: 0.9
-      nesterov: true
-      warmup_steps: 4620
-      weight_decay: 0.0005
-      name: SGD
-  warmup:
-    type: 'linear'
-    linear:
-      warmup_steps: 4620  # 5 epochs
+    optimizer:
+      type: sgd_torch
+      sgd_torch:
+        momentum: 0.9
+        momentum_start: 0.9
+        nesterov: true
+        warmup_steps: 4620
+        weight_decay: 0.0005
+        name: SGD
+    warmup:
+      type: 'linear'
+      linear:
+        warmup_steps: 4620  # 5 epochs
