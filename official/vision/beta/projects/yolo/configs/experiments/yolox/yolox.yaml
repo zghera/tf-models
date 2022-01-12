@@ -1,9 +1,9 @@
 # --experiment_type=yolox
 # mAP 
 runtime:
-  distribution_strategy: 'mirrored'
+  distribution_strategy: 'tpu'
   mixed_precision_dtype: 'float32'
-  num_gpus: 1
+  tpu_enable_xla_dynamic_padder: false
 task:
   model:
     input_size: [640, 640, 3]
@@ -53,12 +53,12 @@ task:
       level_limits: [64, 128]
       anchors_per_scale: 1
   train_data:
-    input_path: '/content/train*'
+    input_path: 'gs://cam2-datasets/coco/train*'
     shuffle_buffer_size: 10000
     parser:
       mosaic:
         mosaic_frequency: 1.0
-        mixup_frequency: 0.0
+        mixup_frequency: 0.2
         mosaic_crop_mode: 'scale'
         mosaic_center: 0.25
         aug_scale_min: 0.1
@@ -69,4 +69,23 @@ task:
       aug_rand_translate: 0.1
       area_thresh: 0.1
   validation_data:
-    input_path: '/content/val*'
+    input_path: 'gs://cam2-datasets/coco/val*'
+  trainer:
+    train_steps: 831600 # epoch 300 to 450 
+    optimizer_config:
+      learning_rate:
+        cosine:
+          decay_steps: 831600 # epoch 300 to 450 
+    optimizer:
+      type: sgd_torch
+      sgd_torch:
+        momentum: 0.9
+        momentum_start: 0.9
+        nesterov: true
+        warmup_steps: 1000
+        weight_decay: 0.0005
+        name: SGD
+    warmup:
+      type: 'linear'
+      linear:
+        warmup_steps: 1000  # learning rate rises from 0 to 0.0013 over 1000 steps # 5 epochs
