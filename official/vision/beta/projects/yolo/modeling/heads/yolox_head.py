@@ -15,7 +15,6 @@
 # Lint as: python3
 """Yolox heads."""
 import tensorflow as tf
-from loguru import logger
 from tensorflow.keras.models import Sequential
 
 from official.vision.beta.projects.yolo.modeling.layers import nn_blocks
