@@ -15,11 +15,12 @@
 # Lint as: python3
 """Tests for yolo heads."""
 
+import tensorflow as tf
 # Import libraries
 from absl.testing import parameterized
-import tensorflow as tf
 
-from official.vision.beta.projects.yolo.modeling.heads import yolox_head as heads
+from official.vision.beta.projects.yolo.modeling.heads import \
+    yolox_head as heads
 
 
 class YoloDecoderTest(parameterized.TestCase, tf.test.TestCase):

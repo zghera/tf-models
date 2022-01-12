@@ -13,9 +13,9 @@
 # limitations under the License.
 
 """box_ops tests."""
-from absl.testing import parameterized
 import numpy as np
 import tensorflow as tf
+from absl.testing import parameterized
 
 from official.vision.beta.projects.yolo.ops import box_ops
 

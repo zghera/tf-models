@@ -14,8 +14,8 @@
 
 """Tests for yolo heads."""
 
-from absl.testing import parameterized
 import tensorflow as tf
+from absl.testing import parameterized
 
 from official.vision.beta.projects.yolo.losses import yolo_loss
 

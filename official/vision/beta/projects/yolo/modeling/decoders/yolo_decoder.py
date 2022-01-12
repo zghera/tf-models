@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Feature Pyramid Network and Path Aggregation variants used in YOLO."""
-from typing import Mapping, Union, Optional
+from typing import Mapping, Optional, Union
 
 import tensorflow as tf
 

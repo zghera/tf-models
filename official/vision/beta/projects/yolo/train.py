@@ -14,12 +14,12 @@
 
 """TensorFlow Model Garden Vision training driver."""
 
-from absl import app
-from absl import flags
+from absl import app, flags
 
 from official.common import flags as tfm_flags
 from official.vision.beta import train
-from official.vision.beta.projects.yolo.common import registry_imports  # pylint: disable=unused-import
+from official.vision.beta.projects.yolo.common import \
+    registry_imports  # pylint: disable=unused-import
 
 FLAGS = flags.FLAGS
 

@@ -16,8 +16,7 @@
 
 import gin
 
-from official.modeling.optimization import ema_optimizer
-from official.modeling.optimization import optimizer_factory
+from official.modeling.optimization import ema_optimizer, optimizer_factory
 from official.vision.beta.projects.yolo.optimization import sgd_torch
 
 optimizer_factory.OPTIMIZERS_CLS.update({

@@ -15,13 +15,13 @@
 # Lint as: python3
 """Tests for YOLO."""
 
+import tensorflow as tf
 # Import libraries
 from absl.testing import parameterized
-import tensorflow as tf
+from tensorflow.python.distribute import combinations, strategy_combinations
 
-from tensorflow.python.distribute import combinations
-from tensorflow.python.distribute import strategy_combinations
-from official.vision.beta.projects.yolo.modeling.decoders import yolo_decoder as decoders
+from official.vision.beta.projects.yolo.modeling.decoders import \
+    yolo_decoder as decoders
 
 
 class YoloDecoderTest(parameterized.TestCase, tf.test.TestCase):

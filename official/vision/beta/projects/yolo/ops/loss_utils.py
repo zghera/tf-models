@@ -17,8 +17,7 @@
 import numpy as np
 import tensorflow as tf
 
-from official.vision.beta.projects.yolo.ops import box_ops
-from official.vision.beta.projects.yolo.ops import math_ops
+from official.vision.beta.projects.yolo.ops import box_ops, math_ops
 
 
 @tf.custom_gradient

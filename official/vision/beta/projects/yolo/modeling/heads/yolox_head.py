@@ -14,12 +14,13 @@
 
 # Lint as: python3
 """Yolox heads."""
-from loguru import logger
 import tensorflow as tf
-
+from loguru import logger
 from tensorflow.keras.models import Sequential
+
 from official.vision.beta.projects.yolo.modeling.layers import nn_blocks
 from official.vision.beta.projects.yolo.ops import box_ops
+
 
 class YOLOXHead(tf.keras.layers.Layer):
   """YOLOX Prediction Head."""

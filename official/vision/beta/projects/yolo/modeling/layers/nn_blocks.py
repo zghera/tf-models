@@ -15,13 +15,15 @@
 from typing import Callable, List, Tuple
 
 import tensorflow as tf
+import tensorflow.keras.backend as K
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import (Activation, BatchNormalization, Conv2D,
+                                     Layer, LeakyReLU, MaxPool2D, ReLU,
+                                     UpSampling2D, concatenate)
 
 from official.modeling import tf_utils
 from official.vision.beta.ops import spatial_transform_ops
-import tensorflow.keras.backend as K
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Layer, Conv2D, LeakyReLU, \
-    MaxPool2D, UpSampling2D, Activation, ReLU, BatchNormalization, concatenate
+
 
 @tf.keras.utils.register_keras_serializable(package='yolo')
 class Identity(tf.keras.layers.Layer):

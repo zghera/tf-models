@@ -19,9 +19,8 @@ import functools
 
 import tensorflow as tf
 
-from official.vision.beta.projects.yolo.ops import box_ops
-from official.vision.beta.projects.yolo.ops import loss_utils
-from official.vision.beta.projects.yolo.ops import math_ops
+from official.vision.beta.projects.yolo.ops import (box_ops, loss_utils,
+                                                    math_ops)
 
 
 class YoloLossBase(object, metaclass=abc.ABCMeta):

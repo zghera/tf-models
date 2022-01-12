@@ -17,25 +17,22 @@
 import collections
 from typing import Optional
 
-from absl import logging
 import tensorflow as tf
+from absl import logging
 
-from official.core import base_task
-from official.core import config_definitions
-from official.core import input_reader
-from official.core import task_factory
+from official.core import (base_task, config_definitions, input_reader,
+                           task_factory)
 from official.modeling import performance
-from official.vision.beta.dataloaders import tfds_factory
-from official.vision.beta.dataloaders import tf_example_label_map_decoder
+from official.vision.beta.dataloaders import (tf_example_label_map_decoder,
+                                              tfds_factory)
 from official.vision.beta.evaluation import coco_evaluator
 from official.vision.beta.ops import box_ops
 from official.vision.beta.projects.yolo import optimization
 from official.vision.beta.projects.yolo.configs import yolo as exp_cfg
-from official.vision.beta.projects.yolo.dataloaders import tf_example_decoder
-from official.vision.beta.projects.yolo.dataloaders import yolo_input
+from official.vision.beta.projects.yolo.dataloaders import (tf_example_decoder,
+                                                            yolo_input)
 from official.vision.beta.projects.yolo.modeling import factory
-from official.vision.beta.projects.yolo.ops import mosaic
-from official.vision.beta.projects.yolo.ops import preprocessing_ops
+from official.vision.beta.projects.yolo.ops import mosaic, preprocessing_ops
 from official.vision.beta.projects.yolo.tasks import task_utils
 
 OptimizationConfig = optimization.OptimizationConfig

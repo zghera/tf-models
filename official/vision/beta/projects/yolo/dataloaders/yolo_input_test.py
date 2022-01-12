@@ -13,15 +13,18 @@
 # limitations under the License.
 
 """Yolo Dataset Testing functions"""
-from official.vision.beta.projects.yolo.common import registry_imports  # pylint: disable=unused-import
-from official.vision.beta.projects.yolo.tasks import image_classification as imc
-from official.vision.beta.projects.yolo.configs import darknet_classification as dcfg
-
 import os
+
 import tensorflow as tf
-from official.core import train_utils
-from official.core import task_factory
 from absl.testing import parameterized
+
+from official.core import task_factory, train_utils
+from official.vision.beta.projects.yolo.common import \
+    registry_imports  # pylint: disable=unused-import
+from official.vision.beta.projects.yolo.configs import \
+    darknet_classification as dcfg
+from official.vision.beta.projects.yolo.tasks import \
+    image_classification as imc
 
 PATH_TO_COCO = '/media/vbanna/DATA_SHARE/CV/datasets/COCO_raw/records/'
 

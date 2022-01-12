@@ -36,6 +36,7 @@ Darknets are used mainly for object detection in:
 """
 
 import collections
+
 import tensorflow as tf
 
 from official.modeling import hyperparams

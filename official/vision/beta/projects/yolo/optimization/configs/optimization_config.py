@@ -21,8 +21,10 @@ an OptimizationConfig class.
 import dataclasses
 from typing import Optional
 
-from official.modeling.optimization.configs import optimization_config as optimization_cfg
-from official.vision.beta.projects.yolo.optimization.configs import optimizer_config as opt_cfg
+from official.modeling.optimization.configs import \
+    optimization_config as optimization_cfg
+from official.vision.beta.projects.yolo.optimization.configs import \
+    optimizer_config as opt_cfg
 
 
 @dataclasses.dataclass

@@ -24,9 +24,7 @@ from official.core import exp_factory
 from official.modeling import hyperparams
 from official.vision.beta.configs import common
 from official.vision.beta.projects.yolo import optimization
-from official.vision.beta.projects.yolo.configs import backbones
-from official.vision.beta.projects.yolo.configs import decoders
-
+from official.vision.beta.projects.yolo.configs import backbones, decoders
 
 # pytype: disable=annotation-type-mismatch
 

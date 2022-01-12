@@ -16,9 +16,7 @@
 import numpy as np
 import tensorflow as tf
 
-from yolo.ops import box_ops
-from yolo.ops import preprocessing_ops
-from yolo.ops import loss_utils
+from yolo.ops import box_ops, loss_utils, preprocessing_ops
 
 INF = 10000000
 

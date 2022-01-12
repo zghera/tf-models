@@ -17,8 +17,7 @@ import tensorflow as tf
 
 from official.vision.beta.modeling.layers import detection_generator
 from official.vision.beta.projects.yolo.losses import yolo_loss
-from official.vision.beta.projects.yolo.ops import box_ops
-from official.vision.beta.projects.yolo.ops import loss_utils
+from official.vision.beta.projects.yolo.ops import box_ops, loss_utils
 
 
 @tf.keras.utils.register_keras_serializable(package='yolo')

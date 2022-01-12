@@ -26,7 +26,6 @@ from official.vision.beta.configs import common
 from official.vision.beta.projects.yolo import optimization
 from official.vision.beta.projects.yolo.configs import backbones, decoders
 
-
 # pytype: disable=annotation-type-mismatch
 
 MIN_LEVEL = 1

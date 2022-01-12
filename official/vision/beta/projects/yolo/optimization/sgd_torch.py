@@ -15,8 +15,8 @@
 """SGD PyTorch optimizer."""
 import re
 
-from absl import logging
 import tensorflow as tf
+from absl import logging
 
 LearningRateSchedule = tf.keras.optimizers.schedules.LearningRateSchedule
 

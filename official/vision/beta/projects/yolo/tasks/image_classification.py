@@ -15,10 +15,11 @@
 """Image classification task definition."""
 from official.common import dataset_fn
 from official.core import task_factory
-from official.vision.beta.dataloaders import classification_input as classification_input_base
-from official.vision.beta.dataloaders import input_reader_factory
-from official.vision.beta.dataloaders import tfds_factory
-from official.vision.beta.projects.yolo.configs import darknet_classification as exp_cfg
+from official.vision.beta.dataloaders import \
+    classification_input as classification_input_base
+from official.vision.beta.dataloaders import input_reader_factory, tfds_factory
+from official.vision.beta.projects.yolo.configs import \
+    darknet_classification as exp_cfg
 from official.vision.beta.projects.yolo.dataloaders import classification_input
 from official.vision.beta.tasks import image_classification
 

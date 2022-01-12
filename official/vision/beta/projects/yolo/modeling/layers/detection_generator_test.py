@@ -13,10 +13,11 @@
 # limitations under the License.
 
 """Tests for yolo detection generator."""
-from absl.testing import parameterized
 import tensorflow as tf
+from absl.testing import parameterized
 
-from official.vision.beta.projects.yolo.modeling.layers import detection_generator as dg
+from official.vision.beta.projects.yolo.modeling.layers import \
+    detection_generator as dg
 
 
 class YoloDecoderTest(parameterized.TestCase, tf.test.TestCase):
