@@ -142,9 +142,6 @@ def build_yolox(input_specs, model_config, l2_regularization):
   model.build(input_specs.shape)
 
   model.summary(print_fn=logging.info)
-  logger.info(model.summary)
-  logger.info(model)
-
 
   losses = detection_generator_obj.get_losses()
   return model, losses
