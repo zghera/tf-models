@@ -272,7 +272,7 @@ def yolox() -> cfg.ExperimentConfig:
 @exp_factory.register_config_factory('yolox_regular')
 def yolox_regular() -> cfg.ExperimentConfig:
   """COCO object detection with YOLOvx."""
-  train_batch_size = 64
+  train_batch_size = 128
   eval_batch_size = 8
   train_epochs = 300
   steps_per_epoch = COCO_TRAIN_EXAMPLES // train_batch_size
