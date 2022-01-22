@@ -348,7 +348,7 @@ def yolox_regular() -> cfg.ExperimentConfig:
           checkpoint_interval=steps_per_epoch,
           optimizer_config=optimization.OptimizationConfig({
               'ema': {
-                  'average_decay': 0.9999,
+                  'average_decay': 0.9998,
                   'trainable_weights_only': False,
                   'dynamic_decay': True,
               },
