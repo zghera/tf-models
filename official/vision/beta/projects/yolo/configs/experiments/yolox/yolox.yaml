@@ -56,13 +56,18 @@ task:
     input_path: 'gs://cam2-datasets/coco/train*'
     shuffle_buffer_size: 10000
     parser:
+      aug_rand_saturation: 1.5
+      aug_rand_brightness: 1.5
+      aug_rand_hue: 0.1
       mosaic:
         mosaic_frequency: 1.0
-        mixup_frequency: 0.2
+        mixup_frequency: 1.0
         mosaic_crop_mode: 'scale'
         mosaic_center: 0.25
         aug_scale_min: 0.1
         aug_scale_max: 1.9
+        aug_rand_angle: 10
+
       max_num_instances: 300
       letter_box: true
       random_flip: true
@@ -72,10 +77,12 @@ task:
     input_path: 'gs://cam2-datasets/coco/val*'
 trainer:
   train_steps: 277200 # epoch 300
+  validation_steps: 625
+  validation_interval: 4620
   optimizer_config:
     learning_rate:
       cosine:
-        initial_learning_rate: 0.1
+        initial_learning_rate: 0.02
         decay_steps: 277200 # epoch 300
     optimizer:
       type: sgd_torch
@@ -90,3 +97,4 @@ trainer:
       type: 'linear'
       linear:
         warmup_steps: 4620  # 5 epochs
+        warmup_learning_rate: 0
