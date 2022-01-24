@@ -241,10 +241,47 @@ class Yolo(hyperparams.Config):
 
 
 @dataclasses.dataclass
+class YoloX(hyperparams.Config):
+  input_size: Optional[List[int]] = dataclasses.field(
+      default_factory=lambda: [640, 640, 3])
+  backbone: backbones.Backbone = backbones.Backbone(
+      type='darknet', darknet=backbones.Darknet(model_id='darknet53'))
+  decoder: decoders.Decoder = decoders.Decoder(
+      type='yolo_decoder',
+      yolo_decoder=decoders.YoloDecoder(version='vx, type='regular'))
+  head: YoloHead = YoloXHead()
+  detection_generator: YoloDetectionGenerator = YoloDetectionGenerator()
+  loss: YoloLoss = YoloLoss()
+  norm_activation: common.NormActivation = common.NormActivation(
+      activation='mish',
+      use_sync_bn=True,
+      norm_momentum=0.99,
+      norm_epsilon=0.001)
+  num_classes: int = 80
+  anchor_boxes: AnchorBoxes = AnchorBoxes()
+  darknet_based_model: bool = False
+
+
+@dataclasses.dataclass
 class YoloTask(cfg.TaskConfig):
   per_category_metrics: bool = False
   smart_bias_lr: float = 0.0
   model: Yolo = Yolo()
+  train_data: DataConfig = DataConfig(is_training=True)
+  validation_data: DataConfig = DataConfig(is_training=False)
+  weight_decay: float = 0.0
+  annotation_file: Optional[str] = None
+  init_checkpoint: Optional[str] = None
+  init_checkpoint_modules: Union[
+      str, List[str]] = 'all'  # all, backbone, and/or decoder
+  gradient_clip_norm: float = 0.0
+  seed = GLOBAL_SEED
+
+@dataclasses.dataclass
+class YoloXTask(cfg.TaskConfig):
+  per_category_metrics: bool = False
+  smart_bias_lr: float = 0.0
+  model: YoloX = YoloX()
   train_data: DataConfig = DataConfig(is_training=True)
   validation_data: DataConfig = DataConfig(is_training=False)
   weight_decay: float = 0.0
@@ -264,17 +301,6 @@ COCO_VAL_EXAMPLES = 5000
 @exp_factory.register_config_factory('yolo')
 def yolo() -> cfg.ExperimentConfig:
   """Yolo general config."""
-  return cfg.ExperimentConfig(
-      task=YoloTask(),
-      restrictions=[
-          'task.train_data.is_training != None',
-          'task.validation_data.is_training != None'
-      ])
-
-      
-@exp_factory.register_config_factory('yolox')
-def yolox() -> cfg.ExperimentConfig:
-  """Yolox general config."""
   return cfg.ExperimentConfig(
       task=YoloTask(),
       restrictions=[
@@ -761,13 +787,13 @@ def yolox_regular() -> cfg.ExperimentConfig:
   max_num_instances = 200
   config = cfg.ExperimentConfig(
       runtime=cfg.RuntimeConfig(mixed_precision_dtype='bfloat16'),
-      task=YoloTask(
+      task=YoloXTask(
           smart_bias_lr=0.1,
           init_checkpoint='',
           init_checkpoint_modules='backbone',
           annotation_file=None,
           weight_decay=0.0,
-          model=Yolo(
+          model=YoloX(
               darknet_based_model=True,
               norm_activation=common.NormActivation(use_sync_bn=True),
               head=YOLOXHead(smart_bias=True),
