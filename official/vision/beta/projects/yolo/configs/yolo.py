@@ -796,7 +796,7 @@ def yolox_regular() -> cfg.ExperimentConfig:
           model=YoloX(
               darknet_based_model=True,
               norm_activation=common.NormActivation(use_sync_bn=True),
-              head=YOLOXHead(smart_bias=True),
+              head=YoloXHead(smart_bias=True),
               loss=YoloLoss(use_scaled_loss=False, update_on_repeat=True),
               anchor_boxes=AnchorBoxes(
                   anchors_per_scale=3,
