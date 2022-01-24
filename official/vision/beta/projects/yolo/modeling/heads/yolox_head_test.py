@@ -35,7 +35,7 @@ class YoloDecoderTest(parameterized.TestCase, tf.test.TestCase):
     }
     classes = 100
     bps = 3
-    head = heads.YOLOXHead(3, 5, classes=classes, boxes_per_level=bps)
+    head = heads.YoloxHead(3, 5, classes=classes, boxes_per_level=bps)
 
     inputs = {}
     for key in input_shape:
@@ -59,7 +59,7 @@ class YoloDecoderTest(parameterized.TestCase, tf.test.TestCase):
     }
     classes = 100
     bps = 3
-    head = heads.YOLOXHead(3, 5, classes=classes, boxes_per_level=bps)
+    head = heads.YoloxHead(3, 5, classes=classes, boxes_per_level=bps)
 
     inputs = {}
     for key in input_shape:
@@ -67,7 +67,7 @@ class YoloDecoderTest(parameterized.TestCase, tf.test.TestCase):
 
     _ = head(inputs)
     configs = head.get_config()
-    head_from_config = heads.YOLOXHead.from_config(configs)
+    head_from_config = heads.YoloxHead.from_config(configs)
     self.assertAllEqual(head.get_config(), head_from_config.get_config())
 
 

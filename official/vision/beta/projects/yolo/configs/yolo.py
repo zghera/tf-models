@@ -136,7 +136,7 @@ class YoloHead(hyperparams.Config):
 
 
 @dataclasses.dataclass
-class YoloXHead(hyperparams.Config):
+class YoloxHead(hyperparams.Config):
   """Parameterization for the YOLOX Head."""
   width: float = 1.0
   depthwise: bool = False
@@ -241,7 +241,7 @@ class Yolo(hyperparams.Config):
 
 
 @dataclasses.dataclass
-class YoloX(hyperparams.Config):
+class Yolox(hyperparams.Config):
   input_size: Optional[List[int]] = dataclasses.field(
       default_factory=lambda: [640, 640, 3])
   backbone: backbones.Backbone = backbones.Backbone(
@@ -249,7 +249,7 @@ class YoloX(hyperparams.Config):
   decoder: decoders.Decoder = decoders.Decoder(
       type='yolo_decoder',
       yolo_decoder=decoders.YoloDecoder(version='vx', type='regular'))
-  head: YoloHead = YoloXHead()
+  head: YoloHead = YoloxHead()
   detection_generator: YoloDetectionGenerator = YoloDetectionGenerator()
   loss: YoloLoss = YoloLoss()
   norm_activation: common.NormActivation = common.NormActivation(
@@ -778,10 +778,10 @@ def yolox_regular() -> cfg.ExperimentConfig:
           init_checkpoint_modules='backbone',
           annotation_file=None,
           weight_decay=0.0,
-          model=YoloX(
+          model=Yolox(
               darknet_based_model=True,
               norm_activation=common.NormActivation(use_sync_bn=True),
-              head=YoloXHead(smart_bias=True),
+              head=YoloxHead(smart_bias=True),
               loss=YoloLoss(use_scaled_loss=False, update_on_repeat=True),
               anchor_boxes=AnchorBoxes(
                   anchors_per_scale=3,

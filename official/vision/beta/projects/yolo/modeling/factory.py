@@ -58,10 +58,8 @@ def build_yolo_head(input_specs, model_config: yolo.Yolo, l2_regularization):
   min_level = min(map(int, input_specs.keys()))
   max_level = max(map(int, input_specs.keys()))
 
-  print(model_config.as_dict())
-
-  if isinstance(model_config, yolo.YoloX):
-    head = yolox_head.YOLOXHead(
+  if isinstance(model_config, yolo.Yolox):
+    head = yolox_head.YoloxHead(
       min_level=min_level,
       max_level=max_level,
       classes=model_config.num_classes,
