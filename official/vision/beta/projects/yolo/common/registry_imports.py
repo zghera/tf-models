@@ -20,7 +20,6 @@ from official.common import registry_imports
 # import configs
 from official.vision.beta.projects.yolo.configs import darknet_classification
 from official.vision.beta.projects.yolo.configs import yolo as yolo_config
-from official.vision.beta.projects.yolo.configs import yolox as yolox_config
 # import modeling components
 from official.vision.beta.projects.yolo.modeling.backbones import darknet
 from official.vision.beta.projects.yolo.modeling.decoders import yolo_decoder
@@ -31,4 +30,3 @@ from official.vision.beta.projects.yolo.optimization.configs import (
 # import tasks
 from official.vision.beta.projects.yolo.tasks import image_classification
 from official.vision.beta.projects.yolo.tasks import yolo as yolo_task
-from official.vision.beta.projects.yolo.tasks import yolox as yolox_task
