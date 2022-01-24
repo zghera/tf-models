@@ -102,9 +102,6 @@ task:
       use_tie_breaker: true
       anchor_thresh: 0.4
   weight_decay: 0.000
-  init_checkpoint: 'gs://tf_model_garden/vision/yolo/ckpt-15000'
-  init_checkpoint_modules: 'backbone'
-  annotation_file: null
 trainer:
   train_steps: 555000
   validation_steps: 625
