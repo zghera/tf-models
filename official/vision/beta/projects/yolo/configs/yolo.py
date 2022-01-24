@@ -277,21 +277,6 @@ class YoloTask(cfg.TaskConfig):
   gradient_clip_norm: float = 0.0
   seed = GLOBAL_SEED
 
-@dataclasses.dataclass
-class YoloXTask(cfg.TaskConfig):
-  per_category_metrics: bool = False
-  smart_bias_lr: float = 0.0
-  model: YoloX = YoloX()
-  train_data: DataConfig = DataConfig(is_training=True)
-  validation_data: DataConfig = DataConfig(is_training=False)
-  weight_decay: float = 0.0
-  annotation_file: Optional[str] = None
-  init_checkpoint: Optional[str] = None
-  init_checkpoint_modules: Union[
-      str, List[str]] = 'all'  # all, backbone, and/or decoder
-  gradient_clip_norm: float = 0.0
-  seed = GLOBAL_SEED
-
 
 COCO_INPUT_PATH_BASE = 'coco'
 COCO_TRAIN_EXAMPLES = 118287
@@ -787,7 +772,7 @@ def yolox_regular() -> cfg.ExperimentConfig:
   max_num_instances = 200
   config = cfg.ExperimentConfig(
       runtime=cfg.RuntimeConfig(mixed_precision_dtype='bfloat16'),
-      task=YoloXTask(
+      task=YoloTask(
           smart_bias_lr=0.1,
           init_checkpoint='',
           init_checkpoint_modules='backbone',
