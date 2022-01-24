@@ -15,9 +15,10 @@
 """Contains common factory functions yolo neural networks."""
 
 from absl import logging
+
 from official.vision.beta.modeling.backbones import factory as backbone_factory
 from official.vision.beta.modeling.decoders import factory as decoder_factory
-from official.vision.beta.projects.yolo.configs import yolo, yolox
+from official.vision.beta.projects.yolo.configs import yolo
 from official.vision.beta.projects.yolo.modeling import yolo_model
 from official.vision.beta.projects.yolo.modeling.heads import (yolo_head,
                                                                yolox_head)
@@ -56,22 +57,9 @@ def build_yolo_head(input_specs, model_config: yolo.Yolo, l2_regularization):
   """Builds yolo head."""
   min_level = min(map(int, input_specs.keys()))
   max_level = max(map(int, input_specs.keys()))
-  head = yolo_head.YoloHead(
-      min_level=min_level,
-      max_level=max_level,
-      classes=model_config.num_classes,
-      boxes_per_level=model_config.anchor_boxes.anchors_per_scale,
-      norm_momentum=model_config.norm_activation.norm_momentum,
-      norm_epsilon=model_config.norm_activation.norm_epsilon,
-      kernel_regularizer=l2_regularization,
-      smart_bias=model_config.head.smart_bias)
-  return head
 
-def build_yolox_head(input_specs, model_config: yolox.yolox, l2_regularization):
-  """Builds yolo head."""
-  min_level = min(map(int, input_specs.keys()))
-  max_level = max(map(int, input_specs.keys()))
-  head = yolox_head.YOLOXHead(
+  if model_config == yolo.yolox:
+    head = yolox_head.YOLOXHead(
       min_level=min_level,
       max_level=max_level,
       classes=model_config.num_classes,
@@ -80,6 +68,16 @@ def build_yolox_head(input_specs, model_config: yolox.yolox, l2_regularization):
       norm_epsilon=model_config.norm_activation.norm_epsilon,
       kernel_regularizer=l2_regularization,
       smart_bias=model_config.head.smart_bias)
+  else:
+    head = yolo_head.YoloHead(
+        min_level=min_level,
+        max_level=max_level,
+        classes=model_config.num_classes,
+        boxes_per_level=model_config.anchor_boxes.anchors_per_scale,
+        norm_momentum=model_config.norm_activation.norm_momentum,
+        norm_epsilon=model_config.norm_activation.norm_epsilon,
+        kernel_regularizer=l2_regularization,
+        smart_bias=model_config.head.smart_bias)
   return head
 
 
@@ -103,42 +101,6 @@ def build_yolo(input_specs, model_config, l2_regularization):
       decoder=decoder,
       head=head,
       detection_generator=detection_generator_obj)
-  model.build(input_specs.shape)
-
-  model.summary(print_fn=logging.info)
-
-  losses = detection_generator_obj.get_losses()
-  return model, losses
-
-def build_yolox(input_specs, model_config, l2_regularization):
-  """Builds yolox model."""
-  backbone = model_config.backbone.get()
-  anchor_dict, _ = model_config.anchor_boxes.get(
-      backbone.min_level, backbone.max_level)
-  backbone = backbone_factory.build_backbone(input_specs, model_config.backbone,
-                                             model_config.norm_activation,
-                                             l2_regularization)
-  decoder = decoder_factory.build_decoder(backbone.output_specs, model_config,
-                                          l2_regularization)
-
-  head = build_yolox_head(decoder.output_specs, model_config, l2_regularization)
-  detection_generator_obj = build_yolo_detection_generator(model_config,
-                                                           anchor_dict)
-
-  model = yolo_model.Yolo(
-      backbone=backbone,
-      decoder=decoder,
-      head=head,
-      detection_generator=detection_generator_obj)
-
-  # from tensorflow.keras import Input
-  # from tensorflow.keras import Model
-  # h, w = (640,640)
-  # inputs = Input(shape=(h, w,3))
-  # outputs = model(inputs)
-  # model=Model(inputs,outputs)
-  # model.summary()
-
   model.build(input_specs.shape)
 
   model.summary(print_fn=logging.info)
