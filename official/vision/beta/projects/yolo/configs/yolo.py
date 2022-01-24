@@ -248,7 +248,7 @@ class YoloX(hyperparams.Config):
       type='darknet', darknet=backbones.Darknet(model_id='darknet53'))
   decoder: decoders.Decoder = decoders.Decoder(
       type='yolo_decoder',
-      yolo_decoder=decoders.YoloDecoder(version='vx, type='regular'))
+      yolo_decoder=decoders.YoloDecoder(version='vx', type='regular'))
   head: YoloHead = YoloXHead()
   detection_generator: YoloDetectionGenerator = YoloDetectionGenerator()
   loss: YoloLoss = YoloLoss()
