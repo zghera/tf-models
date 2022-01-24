@@ -270,7 +270,18 @@ def yolo() -> cfg.ExperimentConfig:
           'task.train_data.is_training != None',
           'task.validation_data.is_training != None'
       ])
+
       
+@exp_factory.register_config_factory('yolox')
+def yolox() -> cfg.ExperimentConfig:
+  """Yolox general config."""
+  return cfg.ExperimentConfig(
+      task=YoloTask(),
+      restrictions=[
+          'task.train_data.is_training != None',
+          'task.validation_data.is_training != None'
+      ])
+
 
 @exp_factory.register_config_factory('yolo_darknet')
 def yolo_darknet() -> cfg.ExperimentConfig:
