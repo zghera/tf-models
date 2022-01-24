@@ -136,7 +136,7 @@ class YoloHead(hyperparams.Config):
 
 
 @dataclasses.dataclass
-class YOLOXHead(hyperparams.Config):
+class YoloXHead(hyperparams.Config):
   """Parameterization for the YOLOX Head."""
   width: float = 1.0
   depthwise: bool = False
