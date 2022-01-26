@@ -157,21 +157,6 @@ class YoloDetectionGenerator(hyperparams.Config):
   nms_thresh: float = 0.6
   max_boxes: int = 200
   pre_nms_points: int = 5000
-    
-    
-@dataclasses.dataclass
-class YoloxDetectionGenerator(hyperparams.Config):
-  box_type: FPNConfig = dataclasses.field(
-      default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 'original'))
-  scale_xy: FPNConfig = dataclasses.field(
-      default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 1.0))
-  path_scales: FPNConfig = dataclasses.field(
-      default_factory=_build_path_scales(MIN_LEVEL, MAX_LEVEL))
-  nms_type: str = 'greedy'
-  iou_thresh: float = 0.001
-  nms_thresh: float = 0.65
-  max_boxes: int = 200
-  pre_nms_points: int = 5000
 
 
 @dataclasses.dataclass
@@ -195,30 +180,7 @@ class YoloLoss(hyperparams.Config):
   label_smoothing: float = 0.0
   use_scaled_loss: bool = True
   update_on_repeat: bool = True
- 
-
-@dataclasses.dataclass
-class YoloxLoss(hyperparams.Config):
-  ignore_thresh: FPNConfig = dataclasses.field(
-      default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 0.0))
-  truth_thresh: FPNConfig = dataclasses.field(
-      default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 1.0))
-  box_loss_type: FPNConfig = dataclasses.field(
-      default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 'iou'))
-  iou_normalizer: FPNConfig = dataclasses.field(
-      default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 5.0))
-  cls_normalizer: FPNConfig = dataclasses.field(
-      default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 1.0))
-  object_normalizer: FPNConfig = dataclasses.field(
-      default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 1.0))
-  max_delta: FPNConfig = dataclasses.field(
-      default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, np.inf))
-  objectness_smooth: FPNConfig = dataclasses.field(
-      default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 0.0))
-  label_smoothing: float = 0.0
-  use_scaled_loss: bool = True
-  update_on_repeat: bool = True
-    
+     
 
 @dataclasses.dataclass
 class Box(hyperparams.Config):
@@ -288,8 +250,8 @@ class Yolox(hyperparams.Config):
       type='yolo_decoder',
       yolo_decoder=decoders.YoloDecoder(version='vx', type='regular'))
   head: YoloxHead = YoloxHead()
-  detection_generator: YoloxDetectionGenerator = YoloxDetectionGenerator()
-  loss: YoloxLoss = YoloxLoss()
+  detection_generator: YoloDetectionGenerator = YoloDetectionGenerator()
+  loss: YoloLoss = YoloLoss()
   norm_activation: common.NormActivation = common.NormActivation(
       activation='mish',
       use_sync_bn=True,
@@ -820,9 +782,7 @@ def yolox_regular() -> cfg.ExperimentConfig:
               darknet_based_model=True,
               norm_activation=common.NormActivation(use_sync_bn=True),
               head=YoloxHead(smart_bias=True),
-              loss=YoloxLoss(
-                  use_scaled_loss=True, 
-                  update_on_repeat=True),
+              loss=YoloLoss(use_scaled_loss=True, update_on_repeat=True),
               anchor_boxes=AnchorBoxes(
                   anchors_per_scale=3,
                   boxes=[
