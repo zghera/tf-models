@@ -191,7 +191,7 @@ class YoloxLoss(hyperparams.Config):
   box_loss_type: FPNConfig = dataclasses.field(
       default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 'iou'))
   iou_normalizer: FPNConfig = dataclasses.field(
-      default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 5.0))
+      default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 1.0))
   cls_normalizer: FPNConfig = dataclasses.field(
       default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 1.0))
   object_normalizer: FPNConfig = dataclasses.field(
@@ -274,7 +274,7 @@ class Yolox(hyperparams.Config):
       yolo_decoder=decoders.YoloDecoder(version='vx', type='regular'))
   head: YoloxHead = YoloxHead()
   detection_generator: YoloDetectionGenerator = YoloDetectionGenerator()
-  loss: YoloxLoss = YoloxLoss()
+  loss: YoloLoss = YoloLoss()
   norm_activation: common.NormActivation = common.NormActivation(
       activation='mish',
       use_sync_bn=True,
@@ -805,7 +805,7 @@ def yolox_regular() -> cfg.ExperimentConfig:
               darknet_based_model=True,
               norm_activation=common.NormActivation(use_sync_bn=True),
               head=YoloxHead(smart_bias=True),
-              loss=YoloxLoss(use_scaled_loss=True, update_on_repeat=True),
+              loss=YoloLoss(use_scaled_loss=True, update_on_repeat=True),
               anchor_boxes=AnchorBoxes(
                   anchors_per_scale=3,
                   boxes=[
@@ -877,15 +877,11 @@ def yolox_regular() -> cfg.ExperimentConfig:
                   }
               },
               'learning_rate': {
-                  'type': 'stepwise',
-                  'stepwise': {
-                      'boundaries': [
-                          240 * steps_per_epoch
-                      ],
-                      'values': [
-                          0.00131 * train_batch_size / 64.0,
-                          0.000131 * train_batch_size / 64.0,
-                      ]
+                  'type': 'cosine',
+                  'cosine': {
+                      'initial_learning_rate': 0.02,
+                      'alpha': 0.2,
+                      'decay_steps': train_epochs * steps_per_epoch,
                   }
               },
               'warmup': {
