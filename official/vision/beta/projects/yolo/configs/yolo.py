@@ -191,7 +191,7 @@ class YoloxLoss(hyperparams.Config):
   box_loss_type: FPNConfig = dataclasses.field(
       default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 'iou'))
   iou_normalizer: FPNConfig = dataclasses.field(
-      default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 1.0))
+      default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 5.0))
   cls_normalizer: FPNConfig = dataclasses.field(
       default_factory=_build_dict(MIN_LEVEL, MAX_LEVEL, 1.0))
   object_normalizer: FPNConfig = dataclasses.field(
