@@ -41,9 +41,6 @@ task:
       cls_normalizer:
         'all': 1.00
       object_normalizer:
-#         '5': 0.28
-#         '4': 0.70
-#         '3': 2.80
         ‘all': 1.00
       objectness_smooth:
         'all': 1.0
