@@ -171,7 +171,7 @@ class YOLOXHead(tf.keras.layers.Layer):
           bias_initializer=tf.keras.initializers.constant(self._bias))
 
       self._reg_preds[k] = tf.keras.layers.Conv2D(
-          filters=4
+          filters=4,
           kernel_size=(1, 1),
           strides=(1, 1),
           padding='same')
