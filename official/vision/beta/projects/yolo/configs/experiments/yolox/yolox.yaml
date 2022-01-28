@@ -86,7 +86,7 @@ trainer:
         warmup_steps: 4620
         weight_decay: 0.0005
         name: SGD
-      warmup:
-        type: 'linear'
-        linear:
-          warmup_steps: 4620  # 5 epochs
+    warmup:
+      type: 'linear'
+      linear:
+        warmup_steps: 4620  # 5 epochs
