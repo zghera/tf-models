@@ -33,7 +33,7 @@ task:
       use_scaled_loss: true
       update_on_repeat: true
       box_loss_type:
-        'all': iou
+        'all': ciou
       ignore_thresh:
         'all': 0.0
       iou_normalizer:
@@ -56,18 +56,13 @@ task:
     input_path: 'gs://cam2-datasets/coco/train*'
     shuffle_buffer_size: 10000
     parser:
-      aug_rand_saturation: 1.5
-      aug_rand_brightness: 1.5
-      aug_rand_hue: 0.1
       mosaic:
         mosaic_frequency: 1.0
-        mixup_frequency: 1.0
+        mixup_frequency: 0.2
         mosaic_crop_mode: 'scale'
         mosaic_center: 0.25
-#         aug_scale_min: 0.1
-#         aug_scale_max: 1.9
-#         aug_rand_angle: 10
-
+        aug_scale_min: 0.1
+        aug_scale_max: 1.9
       max_num_instances: 300
       letter_box: true
       random_flip: true
@@ -75,15 +70,13 @@ task:
       area_thresh: 0.1
   validation_data:
     input_path: 'gs://cam2-datasets/coco/val*'
-trainer:
-  train_steps: 277200 # epoch 300
-  validation_steps: 625
-  validation_interval: 4620
-  optimizer_config:
-    learning_rate:
-      cosine:
-        initial_learning_rate: 0.02
-        decay_steps: 277200 # epoch 300
+  trainer:
+    train_steps: 831600 # epoch 300 to 450 
+    optimizer_config:
+      learning_rate:
+        cosine:
+          initial_learning_rate: 0.1
+          decay_steps: 831600 # epoch 300 to 450 
     optimizer:
       type: sgd_torch
       sgd_torch:
@@ -97,4 +90,3 @@ trainer:
       type: 'linear'
       linear:
         warmup_steps: 4620  # 5 epochs
-        warmup_learning_rate: 0
