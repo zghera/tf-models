@@ -41,7 +41,7 @@ task:
       cls_normalizer:
         'all': 1.00
       object_normalizer:
-        ‘all': 1.00
+        'all': 1.00
       objectness_smooth:
         'all': 1.0
     norm_activation:
