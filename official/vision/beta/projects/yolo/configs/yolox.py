@@ -137,7 +137,7 @@ class YOLOXHead(hyperparams.Config):
   # strides: List[int] = [8, 16, 32]
   # in_channels: List[int] = [256, 512, 1024]
   depthwise: bool = False
-  activation: str = 'silu'
+  activation: str = 'LeakyRelu'
   smart_bias: bool = True
 
 
