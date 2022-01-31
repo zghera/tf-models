@@ -208,13 +208,12 @@ class YOLOXHead(tf.keras.layers.Layer):
       reg_output = self._reg_head[k](inputs[k])
       obj_output = self._obj_head[k](inputs[k])
 
-      #for b in range(self._boxes_per_level):
-      #  ordered_preds.append(reg_output[:,:,:,4 * b: 4 * (b + 1)])
-      #  ordered_preds.append(obj_output[:,:,:,b: b + 1])
-      #  ordered_preds.append(cls_output[:,:,:,self._classes * b: self._classes * (b + 1)])
+      for b in range(self._boxes_per_level):
+        ordered_preds.append(reg_output[:,:,:,4 * b: 4 * (b + 1)])
+        ordered_preds.append(obj_output[:,:,:,b: b + 1])
+        ordered_preds.append(cls_output[:,:,:,self._classes * b: self._classes * (b + 1)])
       
-      #output = tf.concat(ordered_preds, axis=-1)
-      output = tf.concat([reg_output, obj_output, cls_output], axis=-1)
+      output = tf.concat(ordered_preds, axis=-1)
       outputs[k] = output
     #Outputs are not flattened here.
     return outputs
