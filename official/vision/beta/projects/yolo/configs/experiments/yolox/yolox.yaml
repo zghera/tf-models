@@ -33,15 +33,17 @@ task:
       use_scaled_loss: true
       update_on_repeat: true
       box_loss_type:
-        'all': iou
+        'all': ciou
       ignore_thresh:
         'all': 0.0
       iou_normalizer:
-        'all': 5
+        'all': 0.05
       cls_normalizer:
-        'all': 1.0
+        'all': 0.3
       object_normalizer:
-        'all': 1.0
+        '5': 0.28
+        '4': 0.70
+        '3': 2.80
       objectness_smooth:
         'all': 1.0
     norm_activation:
