@@ -26,7 +26,7 @@ from official.vision.beta.projects.yolo.configs import \
 from official.vision.beta.projects.yolo.tasks import \
     image_classification as imc
 
-PATH_TO_COCO = 'gs://cam2-datasets/coco/train*'
+PATH_TO_COCO = 'gs://cam2-datasets/coco/'
 
 def test_yolo_input_task(scaled_pipeline = True, batch_size = 1):
   if not scaled_pipeline:
