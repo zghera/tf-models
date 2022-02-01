@@ -79,14 +79,14 @@ trainer:
         alpha: 2
         decay_steps: 277200 # epoch 300
     optimizer:
-      type: sgd_torch
-      sgd_torch:
-        momentum: 0.9
-        momentum_start: 0.9
-        nesterov: true
-        warmup_steps: 4620
-        weight_decay: 0.0005
-        name: SGD
+      type: sgd
+      #sgd_torch:
+      #  momentum: 0.9
+      #  momentum_start: 0.9
+      #  nesterov: true
+      #  warmup_steps: 4620
+      #  weight_decay: 0.0005
+      #  name: SGD
     warmup:
       type: 'linear'
       linear:
