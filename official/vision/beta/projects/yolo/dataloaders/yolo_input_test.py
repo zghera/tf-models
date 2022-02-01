@@ -26,7 +26,7 @@ from official.vision.beta.projects.yolo.configs import \
 from official.vision.beta.projects.yolo.tasks import \
     image_classification as imc
 
-PATH_TO_COCO = '/media/vbanna/DATA_SHARE/CV/datasets/COCO_raw/records/'
+PATH_TO_COCO = 'gs://cam2-datasets/coco/train*'
 
 def test_yolo_input_task(scaled_pipeline = True, batch_size = 1):
   if not scaled_pipeline:
@@ -34,11 +34,11 @@ def test_yolo_input_task(scaled_pipeline = True, batch_size = 1):
     config_path = [
       "official/vision/beta/projects/yolo/configs/experiments/yolov4/detection/yolov4_512_tpu.yaml"]
   else:
-    experiment = "large_yolo"
+    experiment = "yolox"
     # config_path = [
     #   "official/vision/beta/projects/yolo/configs/experiments/scaled-yolo/detection/yolo_l_p6_1280_tpu.yaml"]
     config_path = [
-      "official/vision/beta/projects/yolo/configs/experiments/scaled-yolo/detection/yolo_l_p7_1536_tpu.yaml"]
+      "official/vision/beta/projects/yolo/configs/experiments/yolox/yolox.yaml"]
 
   config = train_utils.ParseConfigOptions(experiment=experiment, 
                                           config_file=config_path)
