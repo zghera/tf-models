@@ -252,6 +252,7 @@ class Parser(parser.Parser):
     # Apply scaling to the hue saturation and brightness of an image.
     image = tf.cast(image, dtype=self._dtype)
     image = image / 255.0
+    print(image)
     image = preprocessing_ops.image_rand_hsv(
         image,
         self._aug_rand_hue,
