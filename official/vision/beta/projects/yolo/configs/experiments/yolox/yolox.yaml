@@ -79,8 +79,8 @@ trainer:
         alpha: 2
         decay_steps: 277200 # epoch 300
     optimizer:
-      type: sgd
-      sgd:
+      type: sgd_torch
+      sgd_torch:
         momentum: 0.9
         momentum_start: 0.9
         nesterov: true
