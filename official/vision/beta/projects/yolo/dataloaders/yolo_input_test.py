@@ -76,8 +76,8 @@ def test_yolo_pipeline_visually(is_training=True, num=30):
     obj3 = tf.clip_by_value(gt['3'][..., 0], 0.0, 1.0)
     obj4 = tf.clip_by_value(gt['4'][..., 0], 0.0, 1.0)
     obj5 = tf.clip_by_value(gt['5'][..., 0], 0.0, 1.0)
-    obj6 = tf.clip_by_value(gt['6'][..., 0], 0.0, 1.0)
-    obj7 = tf.clip_by_value(gt['7'][..., 0], 0.0, 1.0)
+    #obj6 = tf.clip_by_value(gt['6'][..., 0], 0.0, 1.0)
+    #obj7 = tf.clip_by_value(gt['7'][..., 0], 0.0, 1.0)
 
     for shind in range(1):
       fig, axe = plt.subplots(2, 4)
@@ -86,12 +86,12 @@ def test_yolo_pipeline_visually(is_training=True, num=30):
 
       axe[0, 0].imshow(image)
       axe[0, 1].imshow(obj3[shind, ..., :3].numpy())
-      axe[0, 2].imshow(obj4[shind, ..., :3].numpy())
-      axe[0, 3].imshow(obj5[shind, ..., :3].numpy())
-      axe[1, 0].imshow(obj6[shind, ..., :3].numpy())
-      axe[1, 2].imshow(obj7[shind, ..., :3].numpy())
-      axe[1, 1].imshow(obj6[shind, ..., 3].numpy())
-      axe[1, 3].imshow(obj7[shind, ..., 3].numpy())
+      axe[1, 0].imshow(obj4[shind, ..., :3].numpy())
+      axe[1, 1].imshow(obj5[shind, ..., :3].numpy())
+      #axe[1, 0].imshow(obj6[shind, ..., :3].numpy())
+      #axe[1, 2].imshow(obj7[shind, ..., :3].numpy())
+      #axe[1, 1].imshow(obj6[shind, ..., 3].numpy())
+      #axe[1, 3].imshow(obj7[shind, ..., 3].numpy())
 
       fig.set_size_inches(18.5, 6.5, forward=True)
       plt.tight_layout()
