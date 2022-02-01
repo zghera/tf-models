@@ -353,8 +353,8 @@ def yolox_regular() -> cfg.ExperimentConfig:
                   'dynamic_decay': True,
               },
               'optimizer': {
-                  'type': 'sgd_torch',
-                  'sgd_torch': {
+                  'type': 'sgd',
+                  'sgd': {
                       'momentum': 0.949,
                       'momentum_start': 0.949,
                       'nesterov': True,
