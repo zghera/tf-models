@@ -38,7 +38,7 @@ def test_yolo_input_task(scaled_pipeline = True, batch_size = 1):
     # config_path = [
     #   "official/vision/beta/projects/yolo/configs/experiments/scaled-yolo/detection/yolo_l_p6_1280_tpu.yaml"]
     config_path = [
-      "official/vision/beta/projects/yolo/configs/experiments/yolox/yolox.yaml"]
+      "tf-models/official/vision/beta/projects/yolo/configs/experiments/yolox/yolox.yaml"]
 
   config = train_utils.ParseConfigOptions(experiment=experiment, 
                                           config_file=config_path)
