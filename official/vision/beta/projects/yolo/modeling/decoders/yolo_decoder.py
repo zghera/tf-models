@@ -78,8 +78,21 @@ YOLO_MODELS = {
             spp=dict(
                 embed_spp=True,
                 use_fpn=False,
-                max_level_process_len=2,
-                path_process_len=1),
+                max_level_process_len=None,
+                path_process_len=5),
+        ),
+    'vx':
+        dict(
+            regular=dict(
+                embed_spp=False,
+                use_fpn=False,
+                max_level_process_len=None,
+                path_process_len=5),
+            spp=dict(
+                embed_spp=True,
+                use_fpn=False,
+                max_level_process_len=None,
+                path_process_len=5),
         ),
 }
 

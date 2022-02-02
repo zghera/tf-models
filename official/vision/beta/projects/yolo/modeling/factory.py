@@ -21,6 +21,7 @@ from official.vision.beta.modeling.decoders import factory as decoder_factory
 from official.vision.beta.projects.yolo.configs import yolo
 from official.vision.beta.projects.yolo.modeling import yolo_model
 from official.vision.beta.projects.yolo.modeling.heads import yolo_head
+from official.vision.beta.projects.yolo.modeling.heads import yolox_head
 from official.vision.beta.projects.yolo.modeling.layers import detection_generator
 
 
@@ -55,15 +56,27 @@ def build_yolo_head(input_specs, model_config: yolo.Yolo, l2_regularization):
   """Builds yolo head."""
   min_level = min(map(int, input_specs.keys()))
   max_level = max(map(int, input_specs.keys()))
-  head = yolo_head.YoloHead(
-      min_level=min_level,
-      max_level=max_level,
-      classes=model_config.num_classes,
-      boxes_per_level=model_config.anchor_boxes.anchors_per_scale,
-      norm_momentum=model_config.norm_activation.norm_momentum,
-      norm_epsilon=model_config.norm_activation.norm_epsilon,
-      kernel_regularizer=l2_regularization,
-      smart_bias=model_config.head.smart_bias)
+
+  if model_config.head.version == "regular":
+    head = yolo_head.YoloHead(
+        min_level=min_level,
+        max_level=max_level,
+        classes=model_config.num_classes,
+        boxes_per_level=model_config.anchor_boxes.anchors_per_scale,
+        norm_momentum=model_config.norm_activation.norm_momentum,
+        norm_epsilon=model_config.norm_activation.norm_epsilon,
+        kernel_regularizer=l2_regularization,
+        smart_bias=model_config.head.smart_bias)
+  elif model_config.head.version == "decoupled":
+    head = yolox_head.YOLOXHead(
+        min_level=min_level,
+        max_level=max_level,
+        classes=model_config.num_classes,
+        boxes_per_level=model_config.anchor_boxes.anchors_per_scale,
+        norm_momentum=model_config.norm_activation.norm_momentum,
+        norm_epsilon=model_config.norm_activation.norm_epsilon,
+        kernel_regularizer=l2_regularization,
+        smart_bias=model_config.head.smart_bias)
   return head
 
 
