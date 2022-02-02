@@ -1,5 +1,5 @@
 # --experiment_type=yolo_darknet
-# mAP 43.0
+# mAP 37.0
 runtime:
   distribution_strategy: 'tpu'
   mixed_precision_dtype: 'float32'
@@ -11,7 +11,7 @@ task:
     backbone:
       type: 'darknet'
       darknet:
-        model_id: 'cspdarknet53'
+        model_id: 'darknet53'
         max_level: 5
         min_level: 3
     decoder:

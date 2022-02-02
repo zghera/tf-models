@@ -1,9 +1,13 @@
 # --experiment_type=scaled_yolo
 # mAP 47.6
+# runtime:
+#   distribution_strategy: 'tpu'
+#   mixed_precision_dtype: 'float32'
+#   tpu_enable_xla_dynamic_padder: false
 runtime:
-  distribution_strategy: 'tpu'
-  mixed_precision_dtype: 'float32'
-  tpu_enable_xla_dynamic_padder: false
+  distribution_strategy: 'mirrored'
+  mixed_precision_dtype: 'float16'
+  num_gpus: 1
 task:
   model:
     input_size: [640, 640, 3]
@@ -26,7 +30,7 @@ task:
       scale_xy:
         'all': 2.0
       max_boxes: 300
-      nms_type: iou
+      nms_type: greedy
       iou_thresh: 0.001
       nms_thresh: 0.65
     loss:
@@ -55,7 +59,7 @@ task:
               box: [36, 75], box: [76, 55], box: [72, 146],
               box: [142, 110], box: [192, 243], box: [459, 401]]
   train_data:
-    input_path: 'gs://cam2-datasets/coco/train*'
+    input_path: '/media/vbanna/DATA_SHARE/CV/datasets/COCO_raw/records/train*'
     shuffle_buffer_size: 10000
     parser:
       mosaic:
@@ -71,7 +75,7 @@ task:
       aug_rand_translate: 0.1
       area_thresh: 0.1
   validation_data:
-    input_path: 'gs://cam2-datasets/coco/val*'
+    input_path: '/media/vbanna/DATA_SHARE/CV/datasets/COCO_raw/records/val*'
 trainer:
   best_checkpoint_eval_metric: 'AP'
   best_checkpoint_export_subdir: 'best_ckpt'

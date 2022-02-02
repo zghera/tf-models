@@ -78,6 +78,15 @@ connected to a new, more powerful backbone if a person chose to.
 
 ## Models Zoo
 
+| Object Detectors | AP               | AP50             | AP75             | APl              | APm              | APs              |
+| :--------------: | :--------------: | :--------------: | :--------------: | :--------------: | :--------------: | :--------------: |
+| Yolo-v4          | 43.77%           | 64.80%           | 47.63%           | 56.70%           | 47.88%           | 27.99%           |
+| Yolo-v4 csp      | 47.76%           | 66.01%           | 51.70%           | 61.58%           | 52.60%           | 31.00%           |
+| Yolo-v4 p5       |                  |                  |                  |                  |                  |                  |
+| Yolo-v4 p6       |                  |                  |                  |                  |                  |                  |
+| Yolo-v4 p7       |                  |                  |                  |                  |                  |                  |
+| Yolo-v3          |                  |                  |                  |                  |                  |                  |
+| Yolo-v4 tiny     |                  |                  |                  |                  |                  |                  |
 
 ## Requirements
 [![TensorFlow 2.6](https://img.shields.io/badge/TensorFlow-2.6-FF6F00?logo=tensorflow)](https://github.com/tensorflow/tensorflow/releases/tag/v2.6.0)
