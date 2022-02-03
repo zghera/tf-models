@@ -13,11 +13,10 @@
 # limitations under the License.
 
 """Cubify Operation"""
+from collections import defaultdict
 from typing import Tuple
 
 import tensorflow as tf
-
-from collections import defaultdict
 
 # Vertices in the unit cube (x,y,z)
 UNIT_CUBOID_VERTS = tf.constant(
