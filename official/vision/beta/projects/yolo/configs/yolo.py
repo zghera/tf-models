@@ -523,7 +523,7 @@ def scaled_yolo() -> cfg.ExperimentConfig:
 @exp_factory.register_config_factory('yolox_regular')
 def yolox_regular() -> cfg.ExperimentConfig:
   """COCO object detection with YOLOvx and vx."""
-  train_batch_size = 128
+  train_batch_size = 256
   eval_batch_size = 8
   train_epochs = 300
   warmup_epochs = 5
