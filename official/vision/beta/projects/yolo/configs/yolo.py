@@ -524,7 +524,7 @@ def scaled_yolo() -> cfg.ExperimentConfig:
 def yolox_regular() -> cfg.ExperimentConfig:
   """COCO object detection with YOLOvx and vx."""
   train_batch_size = 256
-  eval_batch_size = 8
+  eval_batch_size = 256
   train_epochs = 300
   warmup_epochs = 5
 
