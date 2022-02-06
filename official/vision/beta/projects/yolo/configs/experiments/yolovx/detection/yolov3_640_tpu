@@ -1,0 +1,14 @@
+# --experiment_type=yolo_darknet
+# mAP 43.0
+runtime:
+  distribution_strategy: 'tpu'
+  mixed_precision_dtype: 'float32'
+task:
+  smart_bias_lr: 0.0
+  model:
+    darknet_based_model: true
+    input_size: [640, 640, 3]
+  train_data:
+    input_path: 'gs://cam2-datasets/coco/train*'
+  validation_data:
+    input_path: 'gs://cam2-datasets/coco/val*'
