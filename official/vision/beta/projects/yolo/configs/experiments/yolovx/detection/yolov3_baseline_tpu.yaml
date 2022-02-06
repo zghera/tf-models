@@ -17,7 +17,7 @@ task:
     decoder:
       type: yolo_decoder
       yolo_decoder:
-        version: v3
+        version: vx
         type: spp
     head:
       smart_bias: true
