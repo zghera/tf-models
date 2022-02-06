@@ -56,15 +56,7 @@ task:
       anchors_per_scale: 1
   train_data:
     input_path: 'gs://cam2-datasets/coco/train*'
-  validation_data:
-    input_path: 'gs://cam2-datasets/coco/val*'
-  weight_decay: 0.000
-  annotation_file: null
-trainer:
-  best_checkpoint_eval_metric: 'AP'
-  best_checkpoint_export_subdir: 'best_ckpt'
-  best_checkpoint_metric_comp: 'higher'
-  parser:
+    parser:
       mosaic:
         mosaic_frequency: 0
 #         mixup_frequency: 0.0
@@ -87,6 +79,14 @@ trainer:
 #       random_pad: true
 #       use_tie_breaker: true
 #       anchor_thresh: 0.4
+  validation_data:
+    input_path: 'gs://cam2-datasets/coco/val*'
+  weight_decay: 0.000
+  annotation_file: null
+trainer:
+  best_checkpoint_eval_metric: 'AP'
+  best_checkpoint_export_subdir: 'best_ckpt'
+  best_checkpoint_metric_comp: 'higher'
   optimizer_config:
     ema:
       average_decay: 0.9998
