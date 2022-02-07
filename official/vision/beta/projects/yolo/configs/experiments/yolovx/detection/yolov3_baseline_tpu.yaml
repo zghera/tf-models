@@ -34,26 +34,23 @@ task:
       use_scaled_loss: false
       update_on_repeat: true
       box_loss_type:  
-        'all': iou
+        'all': ciou
       ignore_thresh:
         'all': 0.0
       iou_normalizer: 
-        'all': 5.0
+        'all': 1.0
       cls_normalizer: 
         'all': 1.0
       object_normalizer: 
         'all': 1.0
       objectness_smooth: 
         'all': 0.0
-    norm_activation:
-      activation: leaky_relu
-      norm_epsilon: 0.0001
-      norm_momentum: 0.97
-      use_sync_bn: true
+#     norm_activation:
+#       activation: leaky_relu
+#       norm_epsilon: 0.0001
+#       norm_momentum: 0.97
+#       use_sync_bn: true
     num_classes: 80
-    anchor_boxes:
-      level_limits: [64, 128]
-      anchors_per_scale: 1
   train_data:
     input_path: 'gs://cam2-datasets/coco/train*'
     parser:
