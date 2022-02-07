@@ -21,30 +21,30 @@ task:
         type: spp
     head:
       smart_bias: true
-    detection_generator:
-      box_type:
-        'all': iou
-      scale_xy:
-        'all': 2.5
-      max_boxes: 300
-      nms_type: iou
-      iou_thresh: 0.01
-      nms_thresh: 0.65
-    loss:
-      use_scaled_loss: false
-      update_on_repeat: true
-      box_loss_type:  
-        'all': ciou
-      ignore_thresh:
-        'all': 0.0
-      iou_normalizer: 
-        'all': 1.0
-      cls_normalizer: 
-        'all': 1.0
-      object_normalizer: 
-        'all': 1.0
-      objectness_smooth: 
-        'all': 0.0
+#     detection_generator:
+#       box_type:
+#         'all': iou
+#       scale_xy:
+#         'all': 2.5
+#       max_boxes: 300
+#       nms_type: iou
+#       iou_thresh: 0.01
+#       nms_thresh: 0.65
+#     loss:
+#       use_scaled_loss: false
+#       update_on_repeat: true
+#       box_loss_type:  
+#         'all': ciou
+#       ignore_thresh:
+#         'all': 0.0
+#       iou_normalizer: 
+#         'all': 1.0
+#       cls_normalizer: 
+#         'all': 1.0
+#       object_normalizer: 
+#         'all': 1.0
+#       objectness_smooth: 
+#         'all': 0.0
 #     norm_activation:
 #       activation: leaky_relu
 #       norm_epsilon: 0.0001
