@@ -60,6 +60,7 @@ task:
               box: [142, 110], box: [192, 243], box: [459, 401]]
   train_data:
     input_path: 'gs://cam2-datasets/coco/train*'
+    global_batch_size: 256
     shuffle_buffer_size: 10000
     parser:
       mosaic:
