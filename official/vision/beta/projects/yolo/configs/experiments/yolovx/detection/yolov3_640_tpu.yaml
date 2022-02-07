@@ -86,6 +86,13 @@ trainer:
       average_decay: 0.9998
       trainable_weights_only: false
       dynamic_decay: true
+    sgd_torch:
+      momentum: 0.9
+      momentum_start: 0.9
+      nesterov: true
+      warmup_steps: 4620
+      weight_decay: 0.0005
+      name: SGD
     learning_rate: 
       cosine:
           initial_learning_rate: 0.04,
