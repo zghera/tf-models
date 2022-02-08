@@ -1,13 +1,13 @@
 # --experiment_type=scaled_yolo
 # mAP 47.6
-# runtime:
-#   distribution_strategy: 'tpu'
-#   mixed_precision_dtype: 'float32'
-#   tpu_enable_xla_dynamic_padder: false
 runtime:
-  distribution_strategy: 'mirrored'
-  mixed_precision_dtype: 'float16'
-  num_gpus: 1
+  distribution_strategy: 'tpu'
+  mixed_precision_dtype: 'float32'
+  tpu_enable_xla_dynamic_padder: false
+# runtime:
+#   distribution_strategy: 'mirrored'
+#   mixed_precision_dtype: 'float16'
+#   num_gpus: 1
 task:
   model:
     input_size: [640, 640, 3]
@@ -26,7 +26,7 @@ task:
       smart_bias: true
     detection_generator:
       box_type:
-        'all': scaled
+        'all': iou
       scale_xy:
         'all': 2.0
       max_boxes: 300
@@ -37,7 +37,7 @@ task:
       use_scaled_loss: true
       update_on_repeat: true
       box_loss_type:
-        'all': ciou
+        'all': iou
       ignore_thresh:
         'all': 0.0
       iou_normalizer:
@@ -59,24 +59,49 @@ task:
               box: [36, 75], box: [76, 55], box: [72, 146],
               box: [142, 110], box: [192, 243], box: [459, 401]]
   train_data:
-    input_path: '/media/vbanna/DATA_SHARE/CV/datasets/COCO_raw/records/train*'
+    input_path: 'gs://cam2-datasets/coco/train*'
+    global_batch_size: 256
     shuffle_buffer_size: 10000
     parser:
       mosaic:
-        mosaic_frequency: 1.0
+        mosaic_frequency: 0.0
         mixup_frequency: 0.0
-        mosaic_crop_mode: 'scale'
-        mosaic_center: 0.25
-        aug_scale_min: 0.1
-        aug_scale_max: 1.9
+#         mosaic_crop_mode: 'scale'
+#         mosaic_center: 0.25
+#         aug_scale_min: 0.1
+#         aug_scale_max: 1.9
       max_num_instances: 300
       letter_box: true
       random_flip: true
       aug_rand_translate: 0.1
       area_thresh: 0.1
   validation_data:
-    input_path: '/media/vbanna/DATA_SHARE/CV/datasets/COCO_raw/records/val*'
+    input_path: 'gs://cam2-datasets/coco/val*'
+    global_batch_size: 256
 trainer:
   best_checkpoint_eval_metric: 'AP'
   best_checkpoint_export_subdir: 'best_ckpt'
   best_checkpoint_metric_comp: 'higher'
+  optimizer_config:
+    ema:
+      average_decay: 0.9998
+      trainable_weights_only: false
+      dynamic_decay: true
+    optimizer:
+      type: sgd_torch
+      sgd_torch:
+        momentum: 0.9
+        momentum_start: 0.9
+        nesterov: true
+        warmup_steps: 4620
+        weight_decay: 0.0005
+#         name: SGD
+#     learning_rate: 
+#       cosine:
+#           initial_learning_rate: 0.04,
+#           alpha: 0.05,
+#           decay_steps: 138600
+#     warmup:
+#       type: 'linear'
+#       linear:
+#         warmup_steps: 4620
