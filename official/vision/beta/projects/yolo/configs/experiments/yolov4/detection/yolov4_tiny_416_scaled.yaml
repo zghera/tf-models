@@ -4,8 +4,8 @@ runtime:
 task:
   smart_bias_lr: 0.0
   model:
-    darknet_based_model: True
-    input_size: [416, 416, 3]
+    darknet_based_model: False
+    input_size: [640, 640, 3]
     backbone:
       type: 'darknet'
       darknet:
@@ -23,23 +23,28 @@ task:
       box_type:
         'all': original
       scale_xy:
-        'all': 1.05
+        'all': 2.0
       max_boxes: 300
       nms_type: iou
       iou_thresh: 0.001
-      nms_thresh: 0.60
+      nms_thresh: 0.65
     loss:
-      use_scaled_loss: False
+      use_scaled_loss: True
+      update_on_repeat: true
       box_loss_type:  
         'all': ciou
       ignore_thresh:
-        'all': 0.7
+        'all': 0.0
       iou_normalizer: 
-        'all': 0.07
+        'all': 0.05
       cls_normalizer: 
-        'all': 1.0
-      object_normalizer: 
-        'all': 1.0
+        'all': 0.3
+      object_normalizer:
+        # '5': 0.4
+        '5': 1.0
+        # '4': 1.0
+        '4': 1.4
+        # '3': 4.0
       objectness_smooth: 
         'all': 0.0
       max_delta:
@@ -66,20 +71,20 @@ task:
         mosaic_frequency: 0.0
         mixup_frequency: 0.0
       max_num_instances: 300
-      letter_box: False
+      letter_box: True
       random_flip: True
-      aug_rand_saturation: 1.5
-      aug_rand_brightness: 1.5
-      aug_rand_hue: 0.1
+      aug_rand_saturation: 0.7
+      aug_rand_brightness: 0.4
+      aug_rand_hue: 0.015
       aug_scale_min: 0.750
       aug_scale_max: 1.168
-      aug_rand_translate: 0.0 
-      jitter: 0.3
-      area_thresh: 0.0
-      random_pad: True
+      aug_rand_translate: 0.05
+      jitter: 0.0
+      area_thresh: 0.1
+      random_pad: False
       use_tie_breaker: False
       best_match_only: False
-      anchor_thresh: 0.7
+      anchor_thresh: 4.0
   validation_data:
     global_batch_size: 8
     dtype: float32
@@ -91,13 +96,13 @@ task:
       letter_box: False
       use_tie_breaker: False
       best_match_only: False
-      anchor_thresh: 0.7
+      anchor_thresh: 4.0
   weight_decay: 0.000
   init_checkpoint: null
   init_checkpoint_modules: null
   annotation_file: null
 trainer:
-  train_steps: 250025
+  train_steps: 276563
   validation_steps: 625
   steps_per_loop: 920 #230
   summary_interval: 920 #230
@@ -109,21 +114,21 @@ trainer:
       trainable_weights_only: false
       dynamic_decay: true
     learning_rate:
-      type: stepwise
-      stepwise:
-        boundaries: [200000, 225000]
-        name: PiecewiseConstantDecay
-        values: [0.02088, 0.002088, 0.0002088]
+      type: cosine
+      cosine:
+        initial_learning_rate: 0.01
+        alpha: 0.2
+        decay_steps: 276563
     optimizer:
       type: sgd_torch
       sgd_torch:
         momentum: 0.9
         momentum_start: 0.9
         nesterov: true
-        warmup_steps: 125
+        warmup_steps: 692
         weight_decay: 0.0005
         name: SGD
     warmup:
       type: 'linear'
       linear:
-        warmup_steps: 125  # learning rate rises from 0 to 0.0013 over 1000 steps
+        warmup_steps: 692  # learning rate rises from 0 to 0.0013 over 1000 steps
