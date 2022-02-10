@@ -547,7 +547,7 @@ def yolox_regular() -> cfg.ExperimentConfig:
                   use_sync_bn=True,
                   norm_epsilon=0.001,
                   norm_momentum=0.97),
-              head=YoloHead(smart_bias=True),
+              head=YoloHead(version="decoupled", smart_bias=True),
               loss=YoloLoss(use_scaled_loss=True),
               anchor_boxes=AnchorBoxes(
                   anchors_per_scale=1,
