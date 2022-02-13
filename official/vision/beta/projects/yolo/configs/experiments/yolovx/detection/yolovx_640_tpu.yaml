@@ -63,12 +63,12 @@ task:
 #     seed: 1000
     parser:
 #       aug_rand_angle: 10.0
-      aug_rand_translate: 0.1
-      aug_scale_min: 0.1
-      aug_scale_max: 2
+#       aug_rand_translate: 0.1
+#       aug_scale_min: 0.1
+#       aug_scale_max: 2
       mosaic:
         mosaic_frequency: 1.00
-        mixup_frequency: 1.0
+#         mixup_frequency: 1.0
         mosaic_crop_mode: 'crop'
 #       max_num_instances: 200
 #       letter_box: false
