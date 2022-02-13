@@ -574,7 +574,7 @@ def yolox_regular() -> cfg.ExperimentConfig:
                   mosaic=Mosaic(
                       mosaic_crop_mode='scale',
                       mosaic_frequency=1.0,
-                      mixup_frequency=0.2,
+                      mixup_frequency=1.0,
                   ))),
           validation_data=DataConfig(
               input_path=os.path.join(COCO_INPUT_PATH_BASE, 'val*'),
