@@ -85,7 +85,7 @@ task:
 #       use_tie_breaker: true
 #       anchor_thresh: 0.4
   validation_data:
-#     global_batch_size: 8
+    global_batch_size: 256
 #     dtype: float32
     input_path: 'gs://cam2-datasets/coco/val*'
 #     is_training: false
