@@ -26,7 +26,7 @@ task:
       scale_xy:
         'all': 1.05
       max_boxes: 300
-      nms_type: greedy
+      nms_type: iou
       iou_thresh: 0.001
       nms_thresh: 0.60
     loss:
@@ -53,10 +53,13 @@ task:
     num_classes: 80
     anchor_boxes:
       anchors_per_scale: 3
-      boxes: [box: [10, 14], box: [23, 27], box: [37, 58], 
-              box: [81, 82], box: [135, 169], box: [344, 319]]
+      boxes: [box: [7, 13], box: [18, 29], box: [33, 50], 
+              box: [55, 89], box: [109, 156], box: [268, 273]]
+      generate_anchors: true
+      box_generation_mode: even_split
+      num_samples: 10000
   train_data:
-    global_batch_size: 16
+    global_batch_size: 512
     dtype: float32
     input_path: '/media/vbanna/DATA_SHARE/CV/datasets/COCO_raw/records/train*'
     is_training: true
@@ -80,7 +83,7 @@ task:
       random_pad: True
       use_tie_breaker: False
       best_match_only: False
-      anchor_thresh: 0.7
+      anchor_thresh: 1.0
   validation_data:
     global_batch_size: 8
     dtype: float32
@@ -92,26 +95,29 @@ task:
       letter_box: False
       use_tie_breaker: False
       best_match_only: False
-      anchor_thresh: 0.7
+      anchor_thresh: 1.0
   weight_decay: 0.000
   init_checkpoint: null
   init_checkpoint_modules: null
   annotation_file: null
 trainer:
-  train_steps: 250025
+  best_checkpoint_eval_metric: 'AP'
+  best_checkpoint_export_subdir: 'best_ckpt'
+  best_checkpoint_metric_comp: 'higher'
+  train_steps: 276563
   validation_steps: 625
-  steps_per_loop: 1 #230
-  summary_interval: 1 #230
+  steps_per_loop: 920 #230
+  summary_interval: 920 #230
   validation_interval: 4600
-  checkpoint_interval: 1 #230
+  checkpoint_interval: 920 #230
   optimizer_config:
     ema: null
     learning_rate:
       type: stepwise
       stepwise:
-        boundaries: [200000, 225000]
+        boundaries: [221250, 248907]
         name: PiecewiseConstantDecay
-        values: [0.00522, 0.000522, 0.0000522]
+        values: [0.02088, 0.002088, 0.0002088]
     optimizer:
       type: sgd_torch
       sgd_torch:

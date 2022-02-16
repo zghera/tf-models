@@ -79,7 +79,7 @@ task:
       random_pad: True
       use_tie_breaker: False
       best_match_only: False
-      anchor_thresh: 0.7
+      anchor_thresh: 1.0
   validation_data:
     global_batch_size: 8
     dtype: float32
@@ -91,7 +91,7 @@ task:
       letter_box: False
       use_tie_breaker: False
       best_match_only: False
-      anchor_thresh: 0.7
+      anchor_thresh: 1.0
   weight_decay: 0.000
   init_checkpoint: null
   init_checkpoint_modules: null
@@ -102,19 +102,16 @@ trainer:
   best_checkpoint_metric_comp: 'higher'
   train_steps: 276563
   validation_steps: 625
-  steps_per_loop: 920
-  summary_interval: 920
+  steps_per_loop: 920 #230
+  summary_interval: 920 #230
   validation_interval: 4600
-  checkpoint_interval: 920
+  checkpoint_interval: 920 #230
   optimizer_config:
-    ema:
-      average_decay: 0.9999
-      trainable_weights_only: false
-      dynamic_decay: true
+    ema: null
     learning_rate:
       type: stepwise
       stepwise:
-        boundaries: [221250, 248906]
+        boundaries: [221250, 248907]
         name: PiecewiseConstantDecay
         values: [0.02088, 0.002088, 0.0002088]
     optimizer:

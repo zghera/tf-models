@@ -35,6 +35,7 @@ task:
       nms_thresh: 0.60
     loss:
       use_scaled_loss: false
+      update_on_repeat: true
       box_loss_type:
         'all': ciou
       ignore_thresh:
