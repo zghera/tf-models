@@ -4,6 +4,8 @@ runtime:
   distribution_strategy: 'tpu'
   mixed_precision_dtype: 'float32'
 task:
+#   init_checkpoint: 'gs://cloud-tpu-checkpoints/vision-2.0/resnet50_imagenet/ckpt-28080'
+#   init_checkpoint_modules: 'backbone'
   smart_bias_lr: 0.0
   model:
     darknet_based_model: true
