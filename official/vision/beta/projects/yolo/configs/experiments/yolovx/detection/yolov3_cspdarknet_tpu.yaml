@@ -20,8 +20,8 @@ task:
     decoder:
       type: yolo_decoder
       yolo_decoder:
-        version: v4
-        type: csp
+        version: v3
+        type: spp
     head:
       smart_bias: true
     detection_generator:
