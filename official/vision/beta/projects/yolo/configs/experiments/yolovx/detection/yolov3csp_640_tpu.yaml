@@ -64,7 +64,7 @@ task:
     shuffle_buffer_size: 10000
     parser:
       mosaic:
-        mosaic_frequency: 0.0
+        mosaic_frequency: 0.75
         mixup_frequency: 0.0
 #         mosaic_crop_mode: 'scale'
 #         mosaic_center: 0.25
