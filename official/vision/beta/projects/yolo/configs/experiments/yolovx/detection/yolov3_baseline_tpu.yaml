@@ -55,6 +55,7 @@ task:
     num_classes: 80
   train_data:
     input_path: 'gs://cam2-datasets/coco/train*'
+    global_batch_size: 256
     parser:
       jitter: 0.3
       max_num_instances: 200
@@ -80,7 +81,7 @@ task:
 #       anchor_thresh: 0.4
   validation_data:
     input_path: 'gs://cam2-datasets/coco/val*'
-    global_batch_size: 8
+    global_batch_size: 256
   weight_decay: 0.000
   annotation_file: null
 trainer:
