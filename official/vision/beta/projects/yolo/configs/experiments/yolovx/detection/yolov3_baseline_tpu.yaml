@@ -88,7 +88,7 @@ trainer:
   best_checkpoint_eval_metric: 'AP'
   best_checkpoint_export_subdir: 'best_ckpt'
   best_checkpoint_metric_comp: 'higher'
-#   optimizer_config:
+  optimizer_config:
 # #     ema:
 # #       average_decay: 0.9998
 # #       trainable_weights_only: false
