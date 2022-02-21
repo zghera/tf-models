@@ -30,7 +30,7 @@ task:
       max_boxes: 300
       nms_type: iou
       iou_thresh: 0.25
-      nms_thresh: 0.45
+      nms_thresh: 0.65
     loss:
       use_scaled_loss: null
       update_on_repeat: true
