@@ -1,5 +1,5 @@
-# --experiment_type=scaled_yolo
-# mAP 47.6
+# --experiment_type=yolo_darknet
+# mAP 21.8
 runtime:
   distribution_strategy: 'tpu'
   mixed_precision_dtype: 'float32'
@@ -95,11 +95,11 @@ trainer:
         nesterov: true
         warmup_steps: 4620
         weight_decay: 0.0005
-    learning_rate: 
-      cosine:
-          initial_learning_rate: 0.01,
-          alpha: 0.05,
-          decay_steps: 138600
+#     learning_rate: 
+#       cosine:
+#           initial_learning_rate: 0.01,
+#           alpha: 0.05,
+#           decay_steps: 138600
 #     warmup:
 #       type: 'linear'
 #       linear:
