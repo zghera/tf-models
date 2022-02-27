@@ -1,5 +1,5 @@
 # --experiment_type=yolo_darknet
-# mAP 40.0
+# mAP 21.8
 runtime:
   distribution_strategy: 'tpu'
   mixed_precision_dtype: 'float32'
@@ -22,7 +22,7 @@ task:
     decoder:
       type: yolo_decoder
       yolo_decoder:
-        version: vx
+        version: v3
         type: spp
         activation: leaky
     head:
