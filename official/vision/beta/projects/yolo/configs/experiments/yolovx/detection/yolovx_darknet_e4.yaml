@@ -1,5 +1,5 @@
 # --experiment_type=yolox_regular
-# mAP 43.37
+# mAP 45.29
 # yolox-Darknet53
 
 runtime:
@@ -75,8 +75,8 @@ task:
     seed: 1000
     parser:
       mosaic:
-        mosaic_frequency: 1.00
-        mixup_frequency: 1.00
+        mosaic_frequency: 0.75
+        mixup_frequency: 0.75
         mosaic_crop_mode: 'crop'
         mosaic_center: 0.2
         aug_scale_min: 0.2
@@ -121,7 +121,7 @@ trainer:
         momentum: 0.9
         momentum_start: 0.9
         nesterov: true
-        warmup_steps: 1000 # wrong
+        warmup_steps: 2310
         weight_decay: 0.0005
     learning_rate: 
       cosine:
