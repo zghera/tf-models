@@ -76,7 +76,7 @@ task:
     parser:
       mosaic:
         mosaic_frequency: 0.75
-        mixup_frequency: 0.75
+        mixup_frequency: 1.00
         mosaic_crop_mode: 'crop'
         mosaic_center: 0.2
         aug_scale_min: 0.2
