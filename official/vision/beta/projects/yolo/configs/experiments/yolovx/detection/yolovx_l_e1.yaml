@@ -1,6 +1,6 @@
 # --experiment_type=yolox_regular
-# mAP 45.23
-# yolox-Darknet53
+# mAP 45.29
+# yolox-l
 
 runtime:
   distribution_strategy: 'tpu'
@@ -26,7 +26,7 @@ task:
       yolo_decoder:
         version: vx
         type: spp
-        activation: leaky
+        activation: swish
     head:
       smart_bias: true
     detection_generator:
@@ -58,7 +58,7 @@ task:
       max_delta:
         'all': 5.0
     norm_activation:
-      activation: swish
+      activation: leaky
       # norm_epsilon: 0.0001
       # norm_momentum: 0.99
       use_sync_bn: true
@@ -76,7 +76,7 @@ task:
     parser:
       mosaic:
         mosaic_frequency: 0.75
-        mixup_frequency: 0
+        mixup_frequency: 0.0
         mosaic_crop_mode: 'crop'
         mosaic_center: 0.2
         aug_scale_min: 0.2
@@ -121,7 +121,7 @@ trainer:
         momentum: 0.9
         momentum_start: 0.9
         nesterov: true
-        warmup_steps: 2310
+        warmup_steps: 1000
         weight_decay: 0.0005
     learning_rate: 
       cosine:
@@ -131,4 +131,4 @@ trainer:
     warmup:
       type: 'linear'
       linear:
-        warmup_steps: 2310
+        warmup_steps: 1000
