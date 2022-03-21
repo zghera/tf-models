@@ -1,5 +1,5 @@
 # --experiment_type=yolo_darknet
-# mAP 21.8
+# mAP 40.03
 runtime:
   distribution_strategy: 'tpu'
   mixed_precision_dtype: 'float32'
