@@ -1,4 +1,5 @@
-# 20.4 AP and 40.38 AP50
+# https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4-tiny.cfg
+
 
 runtime:
   distribution_strategy: 'tpu'
@@ -57,7 +58,7 @@ task:
       boxes: [box: [10, 14], box: [23, 27], box: [37, 58], 
               box: [81, 82], box: [135, 169], box: [344, 319]]
   train_data:
-    global_batch_size: 512
+    global_batch_size: 64
     dtype: float32
     input_path: 'gs://cam2-datasets/coco/train*'
     is_training: true
@@ -73,8 +74,11 @@ task:
       aug_rand_saturation: 1.5
       aug_rand_brightness: 1.5
       aug_rand_hue: 0.1
-      aug_scale_min: 0.750
-      aug_scale_max: 1.168
+      # Idk where aug scale min and max are...
+      # https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4-tiny.cfg#L24 ?
+      # https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4-tiny.cfg#L239 ?
+      aug_scale_min: 0.75 # Orig: 0.75
+      aug_scale_max: 1.5 # Orig :1.168
       aug_rand_translate: 0.0 
       jitter: 0.3
       area_thresh: 0.0
@@ -102,7 +106,7 @@ trainer:
   best_checkpoint_eval_metric: 'AP'
   best_checkpoint_export_subdir: 'best_ckpt'
   best_checkpoint_metric_comp: 'higher'
-  train_steps: 276563
+  train_steps: 2000200
   validation_steps: 625
   steps_per_loop: 920 #230
   summary_interval: 920 #230
@@ -116,9 +120,9 @@ trainer:
     learning_rate:
       type: stepwise
       stepwise:
-        boundaries: [221250, 248907]
+        boundaries: [1600000,1800000]
         name: PiecewiseConstantDecay
-        values: [0.04176, 0.004176, 0.0004176]
+        values: [0.0261, 0.00261, 0.000261]
     optimizer:
       type: sgd_torch
       sgd_torch:

@@ -1,5 +1,3 @@
-# 20.4 AP and 40.38 AP50
-
 runtime:
   distribution_strategy: 'tpu'
   mixed_precision_dtype: 'float32'
