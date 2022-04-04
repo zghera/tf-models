@@ -94,6 +94,7 @@ class Mosaic(hyperparams.Config):
 @dataclasses.dataclass
 class Parser(hyperparams.Config):
   max_num_instances: int = 200
+  no_aug_steps = 0
   letter_box: Optional[bool] = True
   random_flip: bool = True
   random_pad: float = False
@@ -527,6 +528,9 @@ def yolox_regular() -> cfg.ExperimentConfig:
   eval_batch_size = 256
   train_epochs = 300
   warmup_epochs = 5
+  
+  #added no aug
+  no_aug_epochs = 15
 
   validation_interval = 5
   steps_per_epoch = COCO_TRAIN_EXAMPLES // train_batch_size
@@ -571,6 +575,7 @@ def yolox_regular() -> cfg.ExperimentConfig:
                   area_thresh=0.1,
                   random_pad=False,
                   max_num_instances=max_num_instances,
+                  no_aug_steps = no_aug_epochs * steps_per_epoch,
                   mosaic=Mosaic(
                       mosaic_crop_mode='scale',
                       mosaic_frequency=1.0,
