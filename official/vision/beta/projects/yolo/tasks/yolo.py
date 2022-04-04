@@ -38,6 +38,7 @@ from official.vision.beta.projects.yolo.ops import mosaic
 from official.vision.beta.projects.yolo.ops import preprocessing_ops
 from official.vision.beta.projects.yolo.ops import kmeans_anchors
 from official.vision.beta.projects.yolo.tasks import task_utils
+from official.core import base_trainer
 
 OptimizationConfig = optimization.OptimizationConfig
 RuntimeConfig = config_definitions.RuntimeConfig
@@ -170,7 +171,19 @@ class YoloTask(base_task.Task):
     decoder = self._get_data_decoder(params)
 
     # init Mosaic
-    sample_fn = mosaic.Mosaic(
+    if ( base_trainer.trainer.global_step >= config_definitions.trainer.train_steps - params.parser.no_aug_steps):
+      sample_fn = mosaic.Mosaic(
+        output_size=model.input_size,
+        mosaic_frequency=0,
+        mixup_frequency=0,
+        jitter=params.parser.mosaic.jitter,
+        mosaic_center=params.parser.mosaic.mosaic_center,
+        mosaic_crop_mode=params.parser.mosaic.mosaic_crop_mode,
+        aug_scale_min=params.parser.mosaic.aug_scale_min,
+        aug_scale_max=params.parser.mosaic.aug_scale_max,
+        **base_config)
+    else:
+      sample_fn = mosaic.Mosaic(
         output_size=model.input_size,
         mosaic_frequency=params.parser.mosaic.mosaic_frequency,
         mixup_frequency=params.parser.mosaic.mixup_frequency,
