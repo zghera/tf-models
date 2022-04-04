@@ -172,6 +172,7 @@ class YoloTask(base_task.Task):
 
     # init Mosaic
     if ( base_trainer.Trainer.global_step >= config_definitions.TrainerConfig.train_steps - params.parser.no_aug_steps):
+      logging.info('Disabling data augmentation now!')
       sample_fn = mosaic.Mosaic(
         output_size=model.input_size,
         mosaic_frequency=0,

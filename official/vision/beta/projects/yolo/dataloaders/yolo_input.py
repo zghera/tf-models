@@ -48,7 +48,6 @@ class Parser(parser.Parser):
                anchor_t=4.0,
                scale_xy=None,
                best_match_only=False,
-               no_aug_steps=0,
                darknet=False,
                use_tie_breaker=True,
                dtype='float32',

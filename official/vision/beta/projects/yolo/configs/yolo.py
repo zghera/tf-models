@@ -530,7 +530,7 @@ def yolox_regular() -> cfg.ExperimentConfig:
   warmup_epochs = 5
   
   #added no aug
-  no_aug_epochs = 15
+  no_aug_epochs = 300
 
   validation_interval = 5
   steps_per_epoch = COCO_TRAIN_EXAMPLES // train_batch_size
