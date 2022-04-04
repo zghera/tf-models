@@ -94,7 +94,6 @@ class Mosaic(hyperparams.Config):
 @dataclasses.dataclass
 class Parser(hyperparams.Config):
   max_num_instances: int = 200
-  no_aug_steps = 0
   letter_box: Optional[bool] = True
   random_flip: bool = True
   random_pad: float = False
@@ -111,6 +110,7 @@ class Parser(hyperparams.Config):
   best_match_only: bool = False
   anchor_thresh: float = -0.01
   area_thresh: float = 0.1
+  no_aug_steps: int = 0
   mosaic: Mosaic = Mosaic()
 
 
