@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Contains classes used to train Yolo."""
+import logging
 
 import orbit
 import collections
@@ -173,6 +174,7 @@ class YoloTask(base_task.Task):
 
     # init Mosaic
     global_step = orbit.utils.create_global_step()
+    logging.info("global_step = {}".format(global_step))
     if (global_step >= config_definitions.TrainerConfig.train_steps - params.parser.no_aug_steps):
       logging.info('Disabling data augmentation now!')
       sample_fn = mosaic.Mosaic(
