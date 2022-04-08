@@ -1,4 +1,4 @@
-# --experiment_type=yolo_darknet
+# --experiment_type=yolox_regular
 # mAP 43.38
 # yolox-Darknet53
 
