@@ -1,6 +1,6 @@
-# 21.03 AP
-# 41.38 AP50
-
+# 20.82 AP
+# 40.93 AP50
+  
 runtime:
   distribution_strategy: 'tpu'
   mixed_precision_dtype: 'float32'
@@ -103,11 +103,11 @@ trainer:
   best_checkpoint_eval_metric: 'AP'
   best_checkpoint_export_subdir: 'best_ckpt'
   best_checkpoint_metric_comp: 'higher'
-  train_steps: 553126
+  train_steps: 276563
   validation_steps: 625
   steps_per_loop: 920 #230
   summary_interval: 920 #230
-  validation_interval: 108000
+  validation_interval: 54000
   checkpoint_interval: 920 #230
   optimizer_config:
     ema:
@@ -117,19 +117,19 @@ trainer:
     learning_rate:
       type: stepwise
       stepwise:
-        boundaries: [442500, 497814]
+        boundaries: [221250, 248907]
         name: PiecewiseConstantDecay
-        values: [0.08352, 0.008352, 0.0008352]
+        values: [0.04176, 0.004176, 0.0004176]
     optimizer:
       type: sgd_torch
       sgd_torch:
         momentum: 0.9
         momentum_start: 0.9
         nesterov: true
-        warmup_steps: 2000
+        warmup_steps: 1000
         weight_decay: 0.0005
         name: SGD
     warmup:
       type: 'linear'
       linear:
-        warmup_steps: 2000  # learning rate rises from 0 to 0.0013 over 1000 steps
+        warmup_steps: 1000  # learning rate rises from 0 to 0.0013 over 1000 steps
