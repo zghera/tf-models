@@ -21,8 +21,3 @@ task:
 
   validation_data:
     input_path: 'gs://cam2-datasets/coco/val*'
-
-trainer:
-  best_checkpoint_eval_metric: 'AP'
-  best_checkpoint_export_subdir: 'best_ckpt'
-  best_checkpoint_metric_comp: 'higher'
