@@ -1,0 +1,28 @@
+# --experiment_type=yolo_darknet
+# mAP 
+# yolov3
+
+runtime:
+  distribution_strategy: 'tpu'
+  mixed_precision_dtype: 'float32'
+  tpu_enable_xla_dynamic_padder: false
+# runtime:
+#   distribution_strategy: 'mirrored'
+#   mixed_precision_dtype: 'float16'
+#   num_gpus: 1
+task:
+  smart_bias_lr: 0.0
+  model:
+    input_size: [608, 608, 3]
+
+    
+  train_data:
+    input_path: 'gs://cam2-datasets/coco/train*'
+
+  validation_data:
+    input_path: 'gs://cam2-datasets/coco/val*'
+
+trainer:
+  best_checkpoint_eval_metric: 'AP'
+  best_checkpoint_export_subdir: 'best_ckpt'
+  best_checkpoint_metric_comp: 'higher'
