@@ -95,6 +95,7 @@ class DataConfig(base_config.Config):
   tfds_as_supervised: bool = False
   tfds_skip_decoding_feature: str = ""
   seed: Optional[int] = None
+  prefetch_buffer_size: Optional[int] = None
 
 
 @dataclasses.dataclass

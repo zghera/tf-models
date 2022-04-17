@@ -58,6 +58,7 @@ task:
       boxes: [box: [10, 14], box: [23, 27], box: [37, 58], 
               box: [81, 82], box: [135, 169], box: [344, 319]]
   train_data:
+    prefetch_buffer_size: 32
     global_batch_size: 512
     dtype: float32
     input_path: 'gs://cam2-datasets/coco/train*'
@@ -84,6 +85,7 @@ task:
       best_match_only: False
       anchor_thresh: 1.0
   validation_data:
+    prefetch_buffer_size: 32
     global_batch_size: 8
     dtype: float32
     input_path: 'gs://cam2-datasets/coco/val*'
@@ -107,7 +109,7 @@ trainer:
   validation_steps: 625
   steps_per_loop: 920 #230
   summary_interval: 920 #230
-  validation_interval: 108000
+  validation_interval: 9200
   checkpoint_interval: 920 #230
   optimizer_config:
     ema:
