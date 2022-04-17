@@ -41,6 +41,7 @@ from official.vision.beta.projects.yolo.ops import preprocessing_ops
 from official.vision.beta.projects.yolo.ops import kmeans_anchors
 from official.vision.beta.projects.yolo.tasks import task_utils
 from official.core import base_trainer
+from official.vision.beta.projects.yolo.losses import yolo_loss as loss
 
 OptimizationConfig = optimization.OptimizationConfig
 RuntimeConfig = config_definitions.RuntimeConfig
@@ -120,6 +121,10 @@ class YoloTask(base_task.Task):
     input_specs = tf.keras.layers.InputSpec(shape=[None] + input_size)
     l2_regularizer = (
         tf.keras.regularizers.l2(l2_weight_decay) if l2_weight_decay else None)
+    
+    if ( base_trainer.Trainer.global_step>=config_definitions.TrainerConfig.train_steps - exp_cfg.Parser.no_aug_steps):
+      loss.YoloLoss.use_l1_loss = True
+    
     model, losses = factory.build_yolo(
         input_specs, model_base_cfg, l2_regularizer)
 
