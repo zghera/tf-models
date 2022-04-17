@@ -698,6 +698,15 @@ class AnchorFreeLoss(ScaledLoss):
     bce = tf.keras.losses.binary_crossentropy(
         tf.expand_dims(true_conf, axis=-1), pred_conf, from_logits=True)
     conf_loss = tf.reduce_sum(bce)
+    
+    # Compute the L1 loss
+    if (self._use_l1_loss==True) :
+      mae = tf.keras.losses.MeanAbsoluteError(reduction=tf.keras.losses.Reduction.NONE)
+      l1 = mae(y_true, y_pred)
+      #l1_loss = tf.reduce_sum(l1)
+      l1_loss = tf.reduce_mean(l1)
+    else :
+      l1_loss = 0.0
 
     # Compute the cross entropy loss for the class maps.
     class_loss = tf.keras.losses.binary_crossentropy(
@@ -712,9 +721,10 @@ class AnchorFreeLoss(ScaledLoss):
     box_loss *= self._iou_normalizer
     class_loss *= self._cls_normalizer
     conf_loss *= self._object_normalizer
+    l1_loss *= self._l1_loss_normalizer
 
     # Add all the losses together then take the sum over the batches.
-    loss = mean_loss = box_loss + class_loss + conf_loss
+    loss = mean_loss = box_loss + class_loss + conf_loss +l1_loss
     return (loss, box_loss, conf_loss, class_loss, mean_loss, iou, pred_conf,
             ind_mask, grid_mask)
 
@@ -753,12 +763,14 @@ class YoloLoss:
                iou_normalizers=None,
                cls_normalizers=None,
                object_normalizers=None,
+               l1_normalizers = 1.0,
                objectness_smooths=None,
                box_types=None,
                scale_xys=None,
                max_deltas=None,
                label_smoothing=0.0,
                use_scaled_loss=False,
+               use_l1_loss=False,
                update_on_repeat=True):
     """Loss Function Initialization.
 
@@ -803,7 +815,9 @@ class YoloLoss:
       update_on_repeat: `bool` for whether to replace with the newest or the
         best value when an index is consumed by multiple objects.
     """
-
+    #to do -- set l1 loss normalizer 
+    self._l1_loss_normalizer = l1_normalizers
+    
     losses = {'darknet': DarknetLoss, 'scaled': ScaledLoss, 'anchor_free': AnchorFreeLoss}
 
     if use_scaled_loss is None:
@@ -812,7 +826,7 @@ class YoloLoss:
       loss_type = 'scaled'
     else:
       loss_type = 'darknet'
-
+    
     self._loss_dict = {}
     for key in keys:
       self._loss_dict[key] = losses[loss_type](
