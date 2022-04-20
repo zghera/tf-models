@@ -12,20 +12,21 @@ from official.vision.beta.projects.mesh_rcnn.ops.visualize_mesh import \
 from official.vision.beta.projects.mesh_rcnn.utils.weight_utils.load_weights import (
     load_weights_mesh_head, pth_to_dict)
 
-PTH_PATH = r"C:\ML\Weights\meshrcnn_R50.pth"
+#PTH_PATH = r"C:\ML\Weights\meshrcnn_R50.pth"
+PTH_PATH = r"\Users\skaur\Downloads\meshrcnn_R50.pth"
 BACKBONE_FEATURES = [
-  r"C:\ML\sofa_0134_mesh_features.npy",
-  r"C:\ML\bed_0003_mesh_features.npy",
-  r"C:\ML\bookcase_0002_mesh_features.npy",
-  r"C:\ML\chair_0093_mesh_features.npy",
-  r"C:\ML\table_0169_mesh_features.npy",
+  ##r"\Users\skaur\Downloads\Mesh_head\Mesh\sofa_0134_mesh_features.npy",
+  ##r"\Users\skaur\Downloads\Mesh_head\Mesh\bed_0003_mesh_features.npy",
+  ##r"\Users\skaur\Downloads\Mesh_head\Mesh\bookcase_0002_mesh_features.npy",
+  ##r"\Users\skaur\Downloads\Mesh_head\Mesh\chair_0093_mesh_features.npy",
+  r"\Users\skaur\Downloads\Mesh_head\Mesh\table_0169_mesh_features.npy",
 ]
 VOXEL_HEAD_OUTPUTS = [
-  r"C:\ML\sofa_0134_voxels.npy",
-  r"C:\ML\bed_0003_voxels.npy",
-  r"C:\ML\bookcase_0002_voxels.npy",
-  r"C:\ML\chair_0093_voxels.npy",
-  r"C:\ML\table_0169_voxels.npy",
+  ##r"\Users\skaur\Downloads\Mesh_head\Mesh\sofa_0134_voxels.npy",
+  ##r"\Users\skaur\Downloads\Mesh_head\Mesh\bed_0003_voxels.npy",
+  ##r"\Users\skaur\Downloads\Mesh_head\Mesh\bookcase_0002_voxels.npy",
+  ##r"\Users\skaur\Downloads\Mesh_head\Mesh\chair_0093_voxels.npy",
+  r"\Users\skaur\Downloads\Mesh_head\Mesh\table_0169_voxels.npy",
 ]
 
 def print_layer_names(layers_dict, offset=0):
@@ -53,7 +54,7 @@ def test_load_mesh_refinement_branch():
 
   n_weights = load_weights_mesh_head(
       model, weights_dict['roi_heads']['mesh_head'], 'pix3d')
-
+  
   batched_backbone_features = []
   print("backbone features shapes")
   for f in BACKBONE_FEATURES:

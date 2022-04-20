@@ -31,7 +31,7 @@ from typing import Any, List, Iterable, Optional, Text, Tuple
 import numpy as np
 import tensorflow as tf
 
-from tensorflow.python.keras.layers.preprocessing import image_preprocessing as image_ops
+from keras.layers.preprocessing import image_preprocessing as image_ops
 
 
 # This signifies the max integer that the controller RNN could predict for the
