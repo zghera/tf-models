@@ -1,3 +1,4 @@
+# --experiment_type=yolo_darknet
 # 21.21 AP
 # 41.68 AP50
 # 19.12 AP75
