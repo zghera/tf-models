@@ -66,7 +66,7 @@ task:
       nms_type: iou
 
   train_data:
-    global_batch_size: 1
+    global_batch_size: 256
     dtype: float32
     input_path: '/home/wenxin/Desktop/DeepLearning/coco-tfrecords/coco_train*'
     is_training: true
@@ -98,7 +98,7 @@ task:
         # crop_area_mosaic: [0.5, 1.5]
         # crop_area: [0.0]
   validation_data:
-    global_batch_size: 1
+    global_batch_size: 256
     dtype: float32
     input_path: '/home/wenxin/Desktop/DeepLearning/coco-tfrecords/coco_val*'
     is_training: false
@@ -114,12 +114,12 @@ task:
   weight_decay: 0.000
   annotation_file: null
 trainer:
-  train_steps: 555000 # 160 epochs at 64 batchsize -> 500500 * 64/2
-  validation_steps: 78
-  steps_per_loop: 1850
-  summary_interval: 1850
-  validation_interval: 1850
-  checkpoint_interval: 1850
+  train_steps: 138750 # 160 epochs at 64 batchsize -> 500500 * 64/2
+  validation_steps: 20
+  steps_per_loop: 462
+  summary_interval: 462
+  validation_interval: 462
+  checkpoint_interval: 462
   optimizer_config:
     # ema:
     #   average_decay: 0.9999
@@ -129,7 +129,7 @@ trainer:
       cosine:
           initial_learning_rate: 0.01
           alpha: 0.2
-          decay_steps: 555000
+          decay_steps: 138750
       # type: cosine_epoch
       # cosine_epoch:
       #   initial_learning_rate: 0.01
@@ -143,9 +143,9 @@ trainer:
         momentum: 0.937
         momentum_start: 0.8
         nesterov: True
-        warmup_steps: 5550
+        warmup_steps: 1388
         weight_decay: 0.0005
     warmup:
       type: 'linear'
       linear:
-        warmup_steps: 5550 #learning rate rises from 0 to 0.0013 over 1000 steps
+        warmup_steps: 1388 #learning rate rises from 0 to 0.0013 over 1000 steps
