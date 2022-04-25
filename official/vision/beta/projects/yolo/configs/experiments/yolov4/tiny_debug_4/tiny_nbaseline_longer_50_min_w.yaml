@@ -1,5 +1,5 @@
-# 21.11 AP
-# 41.39 AP50
+# 21.18 AP
+# 41.7 AP50
 
 runtime:
   distribution_strategy: 'tpu'
