@@ -14,8 +14,23 @@
 
 """Backbones configurations."""
 import dataclasses
+from typing import Optional
 from official.modeling import hyperparams
 from official.vision.beta.configs import backbones
+
+
+@dataclasses.dataclass
+class ResNet(hyperparams.Config):
+  """ResNet config."""
+  model_id: int = 50
+  depth_multiplier: float = 1.0
+  stem_type: str = 'v0'
+  se_ratio: float = 0.0
+  stochastic_depth_drop_rate: float = 0.0
+  scale_stem: bool = True
+  resnetd_shortcut: bool = False
+  replace_stem_max_pool: bool = False
+  bn_trainable: bool = True
 
 
 @dataclasses.dataclass
@@ -32,5 +47,17 @@ class Darknet(hyperparams.Config):
 
 
 @dataclasses.dataclass
+class SpineNet(hyperparams.Config):
+  """SpineNet config."""
+  model_id: str = '49'
+  stochastic_depth_drop_rate: float = 0.0
+  min_level: int = 3
+  max_level: int = 7
+
+
+@dataclasses.dataclass
 class Backbone(backbones.Backbone):
+  type: Optional[str] = None
+  resnet: ResNet = ResNet()
+  spinenet: SpineNet = SpineNet()
   darknet: Darknet = Darknet()

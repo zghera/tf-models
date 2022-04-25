@@ -26,7 +26,8 @@ from official.vision.beta.projects.yolo.configs import \
 from official.vision.beta.projects.yolo.tasks import \
     image_classification as imc
 
-PATH_TO_COCO = '/media/vbanna/DATA_SHARE/CV/datasets/COCO_raw/records/'
+
+PATH_TO_COCO = '/home/wenxin/Desktop/DeepLearning/coco-tfrecords'
 
 def test_yolo_input_task(scaled_pipeline = True, batch_size = 1):
   if not scaled_pipeline:
@@ -34,11 +35,12 @@ def test_yolo_input_task(scaled_pipeline = True, batch_size = 1):
     config_path = [
       "official/vision/beta/projects/yolo/configs/experiments/yolov4/detection/yolov4_512_tpu.yaml"]
   else:
-    experiment = "large_yolo"
-    # config_path = [
-    #   "official/vision/beta/projects/yolo/configs/experiments/scaled-yolo/detection/yolo_l_p6_1280_tpu.yaml"]
+    experiment = "scaled_yolo"
     config_path = [
-      "official/vision/beta/projects/yolo/configs/experiments/scaled-yolo/detection/yolo_l_p7_1536_tpu.yaml"]
+      "/home/wenxin/Desktop/TFMG/tf-models/official/vision/beta/projects/yolo/configs/experiments/scaled-yolo/detection/yolo_l_p7_1536_tpu.yaml"]
+    # experiment = "yolox_regular"
+    # config_path = [
+      # "/home/wenxin/Desktop/TFMG/tf-models/official/vision/beta/projects/yolo/configs/experiments/yolovx/detection/yolovx_darknet_gpu.yaml"]
 
   config = train_utils.ParseConfigOptions(experiment=experiment, 
                                           config_file=config_path)
@@ -52,8 +54,8 @@ def test_yolo_input_task(scaled_pipeline = True, batch_size = 1):
   config.validation_data.dtype = 'float32'
   config.validation_data.shuffle_buffer_size = 1
   config.train_data.shuffle_buffer_size = 1
-  config.train_data.input_path = os.path.join(PATH_TO_COCO, 'train*')
-  config.validation_data.input_path = os.path.join(PATH_TO_COCO, 'val*')
+  config.train_data.input_path = os.path.join(PATH_TO_COCO, 'coco_train*')
+  config.validation_data.input_path = os.path.join(PATH_TO_COCO, 'coco_val*')
 
   with tf.device('/CPU:0'):
     train_data = task.build_inputs(config.train_data)
@@ -62,7 +64,9 @@ def test_yolo_input_task(scaled_pipeline = True, batch_size = 1):
 
 def test_yolo_pipeline_visually(is_training=True, num=30):
   # visualize the datapipeline
+  import matplotlib
   import matplotlib.pyplot as plt
+  matplotlib.use('TkAgg')
   dataset, testing, _ = test_yolo_input_task()
 
   data = dataset if is_training else testing
