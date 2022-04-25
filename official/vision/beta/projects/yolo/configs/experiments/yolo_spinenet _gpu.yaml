@@ -23,16 +23,12 @@ task:
     head:
       smart_bias: true
     anchor_boxes:
-      anchors_per_scale: 3
-      boxes:  [box: [12.0, 16.0],
-              box: [19.0, 36.0],
-              box: [40.0, 28.0],
-              box: [36.0, 75.0], 
-              box: [76.0, 55.0], 
-              box: [72.0, 146.0], 
-              box: [142.0, 110.0], 
-              box: [192.0, 243.0], 
-              box: [459.0, 401.0]]
+      anchors_per_scale: 4
+      boxes:  [box: [13, 17], box: [22, 25], box: [55, 41], box: [27, 66],
+               box: [57, 88], box: [112, 69], box: [69, 177], box: [136, 138],
+               box: [136, 138], box: [287, 114], box: [134, 275], box: [268, 248],
+               box: [268, 248], box: [232, 504], box: [445, 416], box: [640, 640],
+               box: [812, 393], box: [477, 808], box: [1070, 908], box: [1408, 1408]]
     input_size: [896, 896, 3]
     
     norm_activation:
