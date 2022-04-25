@@ -1,5 +1,9 @@
-# 21.18 AP
-# 41.7 AP50
+# 21.21 AP
+# 41.68 AP50
+# 19.12 AP75
+# 29.59 APl
+# 23.94 APm
+# 9.67 APs
 
 runtime:
   distribution_strategy: 'tpu'
