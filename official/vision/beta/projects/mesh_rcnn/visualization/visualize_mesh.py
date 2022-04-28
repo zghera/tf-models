@@ -19,33 +19,21 @@ def create_voxels(grid_dims, batch_size, occupancy_locs):
 
   return voxels
 
-def visualize_mesh(verts, faces, verts_mask, faces_mask):
+def visualize_mesh_pyvista(verts, faces, verts_mask, faces_mask):
   v = verts.numpy()
   f = faces.numpy()
   vm = verts_mask.numpy() == 1
   fm = faces_mask.numpy() == 1
   new_f = f[fm]
-  out = np.insert(new_f, 0, 3, axis=1)
-  ##meshz = o3d.geometry.TriangleMesh()
-  ##meshz.vertices = o3d.utility.Vector3dVector(v)
-  ##meshz.triangles = o3d.utility.Vector3iVector(new_f)
-  ##meshz.compute_vertex_normals()
-  ##o3d.visualization.draw_geometries([meshz])
-  surf = pv.PolyData(v, faces=out)
+  ## Appends a 3 to each value in the face numpy array. This indicates the number of points for each face to Pyvista.
+  faces_with_dimensions = np.insert(new_f, 0, 3, axis=1)
+  # Creates a Pyvista Polydata object using the vertices and faces
+  surf = pv.PolyData(v, faces=faces_with_dimensions)
+  # Smoothens any rough edges of the object
   smooth = surf.smooth(200)
+  # Plots the object
   smooth.plot()
 
-  ##new_f = f[fm]
-
-  ##fig = plt.figure()
-  ##ax = fig.add_subplot(projection="3d")
-
-  ##pc = art3d.Poly3DCollection(
-      ##v[new_f], facecolors=(1, 0.5, 1, 1), edgecolor="black")
-
-  ##ax.add_collection(pc)
-
-  ##plt.axis('off')
 
 if __name__ == '__main__':
   _grid_dims = 2
@@ -71,4 +59,4 @@ if __name__ == '__main__':
                  _faces[batch_to_view, :],
                  _verts_mask[batch_to_view, :],
                  _faces_mask[batch_to_view, :])
-  ##plt.show()
+
