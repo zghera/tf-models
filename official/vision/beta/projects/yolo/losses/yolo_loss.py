@@ -699,13 +699,12 @@ class AnchorFreeLoss(ScaledLoss):
         tf.expand_dims(true_conf, axis=-1), pred_conf, from_logits=True)
     conf_loss = tf.reduce_sum(bce)
     
-    # Compute the L1 loss
-    if (self._use_l1_loss==True) :
+    # Compute the L1 loss.
+    if self._use_l1_loss:
       mae = tf.keras.losses.MeanAbsoluteError(reduction=tf.keras.losses.Reduction.NONE)
       l1 = mae(y_true, y_pred)
-      #l1_loss = tf.reduce_sum(l1)
       l1_loss = tf.reduce_mean(l1)
-    else :
+    else:
       l1_loss = 0.0
 
     # Compute the cross entropy loss for the class maps.
@@ -724,7 +723,7 @@ class AnchorFreeLoss(ScaledLoss):
     l1_loss *= self._l1_loss_normalizer
 
     # Add all the losses together then take the sum over the batches.
-    loss = mean_loss = box_loss + class_loss + conf_loss +l1_loss
+    loss = mean_loss = box_loss + class_loss + conf_loss + l1_loss
     return (loss, box_loss, conf_loss, class_loss, mean_loss, iou, pred_conf,
             ind_mask, grid_mask)
 
