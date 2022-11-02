@@ -15,20 +15,26 @@
 
 import dataclasses
 
-from official.modeling import hyperparams  # type: ignore
+from official.modeling import hyperparams # type: ignore
 
 
 @dataclasses.dataclass
 class ZHead(hyperparams.Config):
     """Parameterization for the Mesh R-CNN Z Head."""
+    name: str = "fastRCNNFCHead"
     num_fc: int = 2
     fc_dim: int = 1024
     cls_agnostic: bool = False
     num_classes: int = 9
-
+    pooler_resolution: int = 7
+    pooler_sampling_ratio: int = 2
+    pooler_type: str = "roi_align"
+    z_reg_weight: float = 5.0
+    smooth_l1_beta: float = 0.0 
 @dataclasses.dataclass
 class VoxelHead(hyperparams.Config):
   """Parameterization for the Mesh R-CNN Voxel Branch Prediction Head."""
+  name: str = 'VoxelRCNNConvUpsampleHead'
   voxel_depth: int = 28
   conv_dim: int = 256
   num_conv: int = 0
@@ -37,11 +43,24 @@ class VoxelHead(hyperparams.Config):
   bilinearly_upscale_input: bool = True
   class_based_voxel: bool = False
   num_classes: int = 0
+  cubify_thresh: float = 0.0
+  cubify_loss_weight: float = 1.0
+  norm : str = ''
+  cls_agnostic_voxel: bool = False
+  pooler_type: str = 'roi_align'
+  pooler_sampling_ratio : int = 0
+  pooler_resolution : int = 14
 
 @dataclasses.dataclass
 class MeshHead(hyperparams.Config):
   """Parameterization for the Mesh R-CNN Mesh Head."""
-  num_stages: int = 3
+  name: str = 'MeshRCNNGraphConvHead'
+  pooler_resolution: int = 14
+  pooler_sampling_ratio: int = 0
+  pooler_type: str = 'roi_align'
+  num_stages: int = 3 #why this one is different from the original implementation?
+  num_graph_conv: int = 3 
+  graph_conv_dim: int = 256
   stage_depth: int = 3
   output_dim: int = 128
   graph_conv_init: str = 'normal'
@@ -55,3 +74,5 @@ class MeshLosses(hyperparams.Config):
   edge_weight: float = 0.1
   true_num_samples: int = 5000
   pred_num_samples: int = 5000
+  
+
