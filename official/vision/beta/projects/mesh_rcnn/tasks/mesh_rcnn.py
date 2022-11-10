@@ -5,6 +5,8 @@ from official.core import task_factory
 from official.vision.beta.projects.mesh_rcnn.configs import mesh_rcnn as exp_cfg
 from official.vision.beta.projects.mesh_rcnn.modeling import factory
 
+import tensorflow as tf
+
 @task_factory.register_task_cls(exp_cfg.MeshRCNNTask)
 class MeshRCNNTask(base_task.Task):
   """A single-replica view of training procedure.
@@ -19,20 +21,36 @@ class MeshRCNNTask(base_task.Task):
 
     def build_model(self):
         """Build Mesh R-CNN model."""
+
+        input_specs = tf.keras.layers.InputSpec(
+            shape=[None] + self.task_config.model.input_size)
+
+        l2_weight_decay = self.task_config.losses.l2_weight_decay # either T or F
+        
+        # Divide weight decay by 2.0 to match the implementation of tf.nn.l2_loss.
+        # (https://www.tensorflow.org/api_docs/python/tf/keras/regularizers/l2)
+        # (https://www.tensorflow.org/api_docs/python/tf/nn/l2_loss)
+        l2_regularizer = (tf.keras.regularizers.l2(
+            l2_weight_decay / 2.0) if l2_weight_decay else None)
+
         model, losses = factory.build_mesh_rcnn(
             input_specs, model_base_cfg, l2_regularizer)
-        return
+
+        if self.task_config.freeze_backbone:
+            model.backbone.trainable = False
+
+        return model
 
     def build_inputs(self, params, input_context=None):
         """Build input dataset."""
         return
     
     def build_metrics(self, training=True):
-        """Build detection metrics."""
+        """Build metrics."""
         return
 
     def build_losses(self, outputs, labels, aux_losses=None):
-        """Build YOLO losses."""
+        """Build Mesh RCNN losses."""
         return
 
     def initialize(self, model: tf.keras.Model):
@@ -73,7 +91,7 @@ class MeshRCNNTask(base_task.Task):
         return
 
     def reduce_aggregated_logs(self, aggregated_logs, global_step=None):
-        """Reduce logs and remove unneeded items. Update with COCO results."""
+        """Reduce logs and remove unneeded items. Update with results."""
         return
 
     def create_optimizer(self,
