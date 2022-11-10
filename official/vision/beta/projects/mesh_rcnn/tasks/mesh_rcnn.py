@@ -4,15 +4,11 @@ from official.core import base_task
 from official.core import task_factory
 from official.vision.beta.projects.mesh_rcnn.configs import mesh_rcnn as exp_cfg
 from official.vision.beta.projects.mesh_rcnn.modeling import factory
+from official.vision.beta.projects.mesh_rcnn.losses import mesh_losses
 
 @task_factory.register_task_cls(exp_cfg.MeshRCNNTask)
-class MeshRCNNTask(base_task.Task):
-  """A single-replica view of training procedure.
 
-    MeshRCNN task provides artifacts for training/evalution procedures, including
-  loading/iterating over Datasets, initializing the model, calculating the loss,
-  post-processing, and customized metrics with reduction.
-  """
+class MeshRCNNTask(base_task.Task):
     def __init__(self, params, logging_dir: Optional[str] = None):
         super().__init__(params, logging_dir)
         return
@@ -31,9 +27,16 @@ class MeshRCNNTask(base_task.Task):
         """Build detection metrics."""
         return
 
-    def build_losses(self, outputs, labels, aux_losses=None):
-        """Build YOLO losses."""
-        return
+    def build_losses(self, voxel_weight, chamfer_weight, normal_weight, edge_weight, true_num_samples, pred_num_samples):
+        """Build Mesh R-CNN losses."""
+        mesh_loss = mesh_losses.MeshLoss(voxel_weight,
+                         chamfer_weight,
+                         normal_weight,
+                         edge_weight,
+                         true_num_samples,
+                         pred_num_samples)
+        return mesh_loss
+        
 
     def initialize(self, model: tf.keras.Model):
         """Loading pretrained checkpoint."""
