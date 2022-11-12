@@ -27,15 +27,34 @@ class MeshRCNNTask(base_task.Task):
         """Build detection metrics."""
         return
 
-    def build_losses(self, voxel_weight, chamfer_weight, normal_weight, edge_weight, true_num_samples, pred_num_samples):
+    def build_losses(self):
         """Build Mesh R-CNN losses."""
-        mesh_loss = mesh_losses.MeshLoss(voxel_weight,
-                         chamfer_weight,
-                         normal_weight,
-                         edge_weight,
-                         true_num_samples,
-                         pred_num_samples)
-        return mesh_loss
+        loss_config = exp_cfg.MeshLosses
+        mesh_loss = mesh_losses.MeshLoss(loss_config.voxel_weight,
+                         loss_config.chamfer_weight,
+                         loss_config.normal_weight,
+                         loss_config.edge_weight,
+                         loss_config.true_num_samples,
+                         loss_config.pred_num_samples)
+
+        total_loss, voxel_loss, chamfer_loss_, normal_loss_, edge_loss_ = \
+        mesh_loss(
+            voxels_true,
+            voxels_pred,
+            meshes_true,
+            meshes_pred,
+            edges_pred,
+            edges_mask_pred,
+        )
+
+        losses = {
+            'total_loss' : total_loss,
+            'voxel_loss' : voxel_loss,
+            'chamfer_loss' : chamfer_loss_,
+            'normal_loss' : normal_loss_,
+            'edge_loss' : edge_loss_,
+        }
+        return losses
         
 
     def initialize(self, model: tf.keras.Model):
