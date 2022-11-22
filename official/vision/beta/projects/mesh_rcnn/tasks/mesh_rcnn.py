@@ -6,6 +6,8 @@ from official.vision.beta.projects.mesh_rcnn.configs import mesh_rcnn as exp_cfg
 from official.vision.beta.projects.mesh_rcnn.modeling import factory
 from official.vision.beta.projects.mesh_rcnn.losses import mesh_losses
 
+import tensorflow as tf
+
 @task_factory.register_task_cls(exp_cfg.MeshRCNNTask)
 
 class MeshRCNNTask(base_task.Task):
@@ -75,7 +77,40 @@ class MeshRCNNTask(base_task.Task):
         Returns:
         A dictionary of logs.
         """
-        return
+        images, labels = inputs
+        with tf.GradientTape() as tape:
+
+      # prediction
+            outputs = model(images, training=True)
+
+      # Casting output layer as float32 is necessary when mixed_precision is
+      # mixed_float16 or mixed_bfloat16 to ensure output is casted as float32.
+            outputs = tf.nest.map_structure(lambda x: tf.cast(x, tf.float32), outputs)
+
+            loss = self.build_losses()
+
+            scaled_loss = loss/tf.distribute.get_strategy().num_replicas_in_sync
+
+            if isinstance(optimizer, tf.keras.mixed_precision.LossScaleOptimizer):
+                scaled_loss = optimizer.get_scaled_loss(scaled_loss)
+
+        # compute the gradient
+        tvars = model.trainable_variables
+        grads = tape.gradient(scaled_loss, tvars)
+        
+        # Get unscaled loss if we are using the loss scale optimizer on fp16
+        if isinstance(optimizer, tf.keras.mixed_precision.LossScaleOptimizer):
+            grads = optimizer.get_unscaled_gradients(grads)
+
+        # Apply gradients to the model
+        optimizer.apply_gradients(list(zip(grads, tvars)))
+        logs = {self.loss: loss}
+
+        # Compute all metrics
+        if metrics:
+            self.process_metrics(metrics, outputs, labels)
+
+        return logs
 
     def validation_step(self, inputs, model, metrics=None):
         """Validatation step.
