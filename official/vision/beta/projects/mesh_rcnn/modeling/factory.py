@@ -14,12 +14,49 @@
 """Contains factory functions for Mesh R-CNN networks."""
 
 from typing import Optional
+from requests import head
 
 import tensorflow as tf  # type: ignore
 
 from official.vision.beta.projects.mesh_rcnn.configs.mesh_rcnn import VoxelHead
-from official.vision.beta.projects.mesh_rcnn.modeling.heads import voxel_head
+from official.vision.beta.projects.mesh_rcnn.configs.mesh_rcnn import MeshHead
+from official.vision.beta.projects.mesh_rcnn.configs.mesh_rcnn import ZHead
 
+from official.vision.beta.projects.mesh_rcnn.modeling.heads import voxel_head
+from official.vision.beta.projects.mesh_rcnn.modeling.heads import mesh_head
+from official.vision.beta.projects.mesh_rcnn.modeling.heads import z_head
+
+
+def build_z_head(head_config: ZHead) -> z_head.ZHead:
+  """Builds Z Prediction Head.
+  Args:
+    head_config: Dataclass parameterization instance for z head.
+
+  Returns:
+    Z head layer instance.
+  """
+  return z_head.ZHead(
+    num_fc=head_config.num_fc,
+    fc_dim=head_config.fc_dim,
+    cls_agnostic=head_config.cls_agnostic,
+    num_classes=head_config.num_classes
+  )
+
+
+def build_mesh_head(head_config: MeshHead) -> mesh_head.MeshHead:
+  """Builds Mesh Branch Prediction Head.
+  Args:
+    head_config: Dataclass parameterization instance for mesh head.
+
+  Returns:
+    Mesh head layer instance.
+  """
+  return mesh_head.MeshHead(
+    num_stages=head_config.num_stages,
+    stage_depth=head_config.stage_depth,
+    output_dim=head_config.output_dim,
+    graph_conv_init=head_config.graph_conv_init
+  )
 
 def build_voxel_head(head_config: VoxelHead,
                       kernel_regularizer:
