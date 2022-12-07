@@ -16,6 +16,8 @@
 import dataclasses
 
 from official.modeling import hyperparams  # type: ignore
+from official.vision.configs import decoders
+from official.vision.configs import backbones
 
 @dataclasses.dataclass
 class ZHead(hyperparams.Config):
@@ -54,3 +56,10 @@ class MeshLosses(hyperparams.Config):
   edge_weight: float = 0.1
   true_num_samples: int = 5000
   pred_num_samples: int = 5000
+
+@dataclasses.dataclass
+class MeshRCNN(hyperparams.Config):
+  backbone: backbones.Backbone = backbones.Backbone(
+      type='resnet', resnet=backbones.ResNet())
+  decoder: decoders.Decoder = decoders.Decoder(
+      type='fpn', fpn=decoders.FPN())
