@@ -16,6 +16,12 @@
 import dataclasses
 
 from official.modeling import hyperparams  # type: ignore
+from official.core import config_definitions as cfg
+from official.core import exp_factory
+from official.modeling import hyperparams
+from official.vision.beta.projects.mesh_rcnn import optimization
+from official.vision.beta.projects.mesh_rcnn.tasks import mesh_rcnn
+from official.vision.configs import common
 
 @dataclasses.dataclass
 class ZHead(hyperparams.Config):
@@ -54,3 +60,46 @@ class MeshLosses(hyperparams.Config):
   edge_weight: float = 0.1
   true_num_samples: int = 5000
   pred_num_samples: int = 5000
+
+@exp_factory.register_config_factory('mesh_training')
+def mesh_training() -> cfg.ExperimentConfig:
+  """COCO object detection with YOLOv3 and v4."""
+  train_batch_size = 256
+  eval_batch_size = 8
+  train_epochs = 300
+  steps_per_epoch = COCO_TRAIN_EXAMPLES // train_batch_size
+  validation_interval = 5
+
+  max_num_instances = 200
+  config = cfg.ExperimentConfig(
+      trainer=cfg.TrainerConfig(
+          train_steps=train_epochs * steps_per_epoch,
+          validation_steps=COCO_VAL_EXAMPLES // eval_batch_size,
+          validation_interval=validation_interval * steps_per_epoch,
+          steps_per_loop=steps_per_epoch,
+          summary_interval=steps_per_epoch,
+          checkpoint_interval=steps_per_epoch,
+          optimizer_config=optimization.OptimizationConfig({
+              'ema': {
+                  'average_decay': 0.9998,
+                  'trainable_weights_only': False,
+                  'dynamic_decay': True,
+              },
+              'optimizer': {
+                  'type': 'adam',
+                  'sgd_torch': {
+                      'learning_rate' : 0.001, 
+                      'beta_1' : 0.9, 
+                      'beta_2' : 0.999, 
+                      'epsilon' : 1e-07
+                  }
+              },
+              'learning_rate': {},
+              'warmup': {}
+          })),
+      restrictions=[
+          'task.train_data.is_training != None',
+          'task.validation_data.is_training != None'
+      ])
+
+  return config

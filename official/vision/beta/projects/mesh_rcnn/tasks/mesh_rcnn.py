@@ -4,7 +4,7 @@ from official.core import base_task
 from official.core import task_factory
 from official.vision.beta.projects.mesh_rcnn.configs import mesh_rcnn as exp_cfg
 from official.vision.beta.projects.mesh_rcnn.modeling import factory
-from official.modeling.optimization.optimizer_factory import OptimizerFactory
+from official.vision.beta.projects.mesh_rcnn import optimization
 from official.modeling.optimization import ema_optimizer
 from official.modeling import performance
 
@@ -12,16 +12,15 @@ import tensorflow as tf
 
 @task_factory.register_task_cls(exp_cfg.MeshRCNNTask)
 class MeshRCNNTask(base_task.Task):
-  """A single-replica view of training procedure.
+    """A single-replica view of training procedure.
 
-    MeshRCNN task provides artifacts for training/evalution procedures, including
-  loading/iterating over Datasets, initializing the model, calculating the loss,
-  post-processing, and customized metrics with reduction.
-  """
+        MeshRCNN task provides artifacts for training/evalution procedures, including
+    loading/iterating over Datasets, initializing the model, calculating the loss,
+    post-processing, and customized metrics with reduction.
+    """
     def __init__(self, params, logging_dir: Optional[str] = None):
         super().__init__(params, logging_dir)
         return
-
     def build_model(self):
         """Build Mesh R-CNN model."""
 
@@ -47,7 +46,7 @@ class MeshRCNNTask(base_task.Task):
     def build_inputs(self, params, input_context=None):
         """Build input dataset."""
         return
-    
+
     def build_metrics(self, training=True):
         """Build metrics."""
         return
@@ -88,7 +87,7 @@ class MeshRCNNTask(base_task.Task):
         A dictionary of logs.
         """
         return
-    
+
     def aggregate_logs(self, state=None, step_outputs=None):
         """Get Metric Results."""
         return
@@ -98,8 +97,8 @@ class MeshRCNNTask(base_task.Task):
         return
 
     def create_optimizer(self,
-                       optimizer_config: OptimizationConfig,
-                       runtime_config: Optional[RuntimeConfig] = None):
+                        optimizer_config: OptimizationConfig,
+                        runtime_config: Optional[RuntimeConfig] = None):
         """Creates an TF optimizer from configurations.
 
         Args:
@@ -109,19 +108,17 @@ class MeshRCNNTask(base_task.Task):
         Returns:
         A tf.optimizers.Optimizer object.
         """
-        opt_factory = optimizer_factory.OptimizerFactory(optimizer_config)
+        opt_factory = optimization.MeshOptimizerFactory(optimizer_config)
         # pylint: disable=protected-access
         ema = opt_factory._use_ema
         opt_factory._use_ema = False
 
         opt_type = opt_factory._optimizer_type
-        '''
         if opt_type == 'sgd_torch':
             optimizer = opt_factory.build_optimizer(opt_factory.build_learning_rate())
             optimizer.set_bias_lr(
                 opt_factory.get_bias_lr_schedule(self._task_config.smart_bias_lr))
             optimizer.search_and_set_variable_groups(self._model.trainable_variables)
-        '''
         optimizer = opt_factory.build_optimizer(opt_factory.build_learning_rate())
         opt_factory._use_ema = ema
 
