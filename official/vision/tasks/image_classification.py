@@ -13,7 +13,8 @@
 # limitations under the License.
 
 """Image classification task definition."""
-from typing import Any, Optional, List, Tuple
+from typing import Any, List, Optional, Tuple
+
 from absl import logging
 import tensorflow as tf
 
@@ -23,6 +24,7 @@ from official.core import task_factory
 from official.modeling import tf_utils
 from official.vision.configs import image_classification as exp_cfg
 from official.vision.dataloaders import classification_input
+from official.vision.dataloaders import input_reader
 from official.vision.dataloaders import input_reader_factory
 from official.vision.dataloaders import tfds_factory
 from official.vision.modeling import factory
@@ -49,6 +51,9 @@ class ImageClassificationTask(base_task.Task):
         input_specs=input_specs,
         model_config=self.task_config.model,
         l2_regularizer=l2_regularizer)
+
+    if self.task_config.freeze_backbone:
+      model.backbone.trainable = False
     return model
 
   def initialize(self, model: tf.keras.Model):
@@ -103,6 +108,7 @@ class ImageClassificationTask(base_task.Task):
         label_field_key=label_field_key,
         decode_jpeg_only=params.decode_jpeg_only,
         aug_rand_hflip=params.aug_rand_hflip,
+        aug_crop=params.aug_crop,
         aug_type=params.aug_type,
         color_jitter=params.color_jitter,
         random_erasing=params.random_erasing,
@@ -122,6 +128,7 @@ class ImageClassificationTask(base_task.Task):
         params,
         dataset_fn=dataset_fn.pick_dataset_fn(params.file_type),
         decoder_fn=decoder.decode,
+        combine_fn=input_reader.create_combine_fn(params),
         parser_fn=parser.parse_fn(params.is_training),
         postprocess_fn=postprocess_fn)
 
@@ -184,6 +191,45 @@ class ImageClassificationTask(base_task.Task):
             tf.keras.metrics.CategoricalAccuracy(name='accuracy'),
             tf.keras.metrics.TopKCategoricalAccuracy(
                 k=k, name='top_{}_accuracy'.format(k))]
+        if hasattr(
+            self.task_config.evaluation, 'precision_and_recall_thresholds'
+        ) and self.task_config.evaluation.precision_and_recall_thresholds:
+          thresholds = self.task_config.evaluation.precision_and_recall_thresholds
+          # pylint:disable=g-complex-comprehension
+          metrics += [
+              tf.keras.metrics.Precision(
+                  thresholds=th,
+                  name='precision_at_threshold_{}'.format(th),
+                  top_k=1) for th in thresholds
+          ]
+          metrics += [
+              tf.keras.metrics.Recall(
+                  thresholds=th,
+                  name='recall_at_threshold_{}'.format(th),
+                  top_k=1) for th in thresholds
+          ]
+
+          # Add per-class precision and recall.
+          if hasattr(
+              self.task_config.evaluation,
+              'report_per_class_precision_and_recall'
+          ) and self.task_config.evaluation.report_per_class_precision_and_recall:
+            for class_id in range(self.task_config.model.num_classes):
+              metrics += [
+                  tf.keras.metrics.Precision(
+                      thresholds=th,
+                      class_id=class_id,
+                      name=f'precision_at_threshold_{th}/{class_id}',
+                      top_k=1) for th in thresholds
+              ]
+              metrics += [
+                  tf.keras.metrics.Recall(
+                      thresholds=th,
+                      class_id=class_id,
+                      name=f'recall_at_threshold_{th}/{class_id}',
+                      top_k=1) for th in thresholds
+              ]
+              # pylint:enable=g-complex-comprehension
       else:
         metrics = [
             tf.keras.metrics.SparseCategoricalAccuracy(name='accuracy'),
@@ -218,7 +264,7 @@ class ImageClassificationTask(base_task.Task):
     """Does forward and backward.
 
     Args:
-      inputs: A tuple of of input tensors of (features, labels).
+      inputs: A tuple of input tensors of (features, labels).
       model: A tf.keras.Model instance.
       optimizer: The optimizer for this training step.
       metrics: A nested structure of metrics objects.
@@ -234,6 +280,7 @@ class ImageClassificationTask(base_task.Task):
     num_replicas = tf.distribute.get_strategy().num_replicas_in_sync
     with tf.GradientTape() as tape:
       outputs = model(features, training=True)
+
       # Casting output layer as float32 is necessary when mixed_precision is
       # mixed_float16 or mixed_bfloat16 to ensure output is casted as float32.
       outputs = tf.nest.map_structure(
@@ -264,6 +311,11 @@ class ImageClassificationTask(base_task.Task):
     optimizer.apply_gradients(list(zip(grads, tvars)))
 
     logs = {self.loss: loss}
+
+    # Convert logits to softmax for metric computation if needed.
+    if hasattr(self.task_config.model,
+               'output_softmax') and self.task_config.model.output_softmax:
+      outputs = tf.nn.softmax(outputs, axis=-1)
     if metrics:
       self.process_metrics(metrics, labels, outputs)
     elif model.compiled_metrics:
@@ -278,7 +330,7 @@ class ImageClassificationTask(base_task.Task):
     """Runs validatation step.
 
     Args:
-      inputs: A tuple of of input tensors of (features, labels).
+      inputs: A tuple of input tensors of (features, labels).
       model: A tf.keras.Model instance.
       metrics: A nested structure of metrics objects.
 
@@ -289,6 +341,9 @@ class ImageClassificationTask(base_task.Task):
     one_hot = self.task_config.losses.one_hot
     soft_labels = self.task_config.losses.soft_labels
     is_multilabel = self.task_config.train_data.is_multilabel
+    # Note: `soft_labels`` only apply to the training phrase. In the validation
+    # phrase, labels should still be integer ids and need to be converted to
+    # one hot format.
     if (one_hot or soft_labels) and not is_multilabel:
       labels = tf.one_hot(labels, self.task_config.model.num_classes)
 
@@ -300,6 +355,10 @@ class ImageClassificationTask(base_task.Task):
         aux_losses=model.losses)
 
     logs = {self.loss: loss}
+    # Convert logits to softmax for metric computation if needed.
+    if hasattr(self.task_config.model,
+               'output_softmax') and self.task_config.model.output_softmax:
+      outputs = tf.nn.softmax(outputs, axis=-1)
     if metrics:
       self.process_metrics(metrics, labels, outputs)
     elif model.compiled_metrics:

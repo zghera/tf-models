@@ -37,6 +37,7 @@ class RetinaNetHead(tf.keras.layers.Layer):
       num_convs: int = 4,
       num_filters: int = 256,
       attribute_heads: Optional[List[Dict[str, Any]]] = None,
+      share_classification_heads: bool = False,
       use_separable_conv: bool = False,
       activation: str = 'relu',
       use_sync_bn: bool = False,
@@ -52,7 +53,7 @@ class RetinaNetHead(tf.keras.layers.Layer):
       min_level: An `int` number of minimum feature level.
       max_level: An `int` number of maximum feature level.
       num_classes: An `int` number of classes to predict.
-      num_anchors_per_location: An `int` number of number of anchors per pixel
+      num_anchors_per_location: An `int` number of anchors per pixel
         location.
       num_convs: An `int` number that represents the number of the intermediate
         conv layers before the prediction.
@@ -62,6 +63,8 @@ class RetinaNetHead(tf.keras.layers.Layer):
         additional attribute head. Each dict consists of 3 key-value pairs:
         `name`, `type` ('regression' or 'classification'), and `size` (number
         of predicted values for each instance).
+      share_classification_heads: A `bool` that indicates whether
+        sharing weights among the main and attribute classification heads.
       use_separable_conv: A `bool` that indicates whether the separable
         convolution layers is used.
       activation: A `str` that indicates which activation is used, e.g. 'relu',
@@ -88,6 +91,7 @@ class RetinaNetHead(tf.keras.layers.Layer):
         'num_convs': num_convs,
         'num_filters': num_filters,
         'attribute_heads': attribute_heads,
+        'share_classification_heads': share_classification_heads,
         'use_separable_conv': use_separable_conv,
         'activation': activation,
         'use_sync_bn': use_sync_bn,
@@ -140,6 +144,9 @@ class RetinaNetHead(tf.keras.layers.Layer):
       for i in range(self._config_dict['num_convs']):
         if level == self._config_dict['min_level']:
           cls_conv_name = 'classnet-conv_{}'.format(i)
+          if 'kernel_initializer' in conv_kwargs:
+            conv_kwargs['kernel_initializer'] = tf_utils.clone_initializer(
+                conv_kwargs['kernel_initializer'])
           self._cls_convs.append(conv_op(name=cls_conv_name, **conv_kwargs))
         cls_norm_name = 'classnet-conv-norm_{}_{}'.format(level, i)
         this_level_cls_norms.append(bn_op(name=cls_norm_name, **bn_kwargs))
@@ -170,6 +177,9 @@ class RetinaNetHead(tf.keras.layers.Layer):
       for i in range(self._config_dict['num_convs']):
         if level == self._config_dict['min_level']:
           box_conv_name = 'boxnet-conv_{}'.format(i)
+          if 'kernel_initializer' in conv_kwargs:
+            conv_kwargs['kernel_initializer'] = tf_utils.clone_initializer(
+                conv_kwargs['kernel_initializer'])
           self._box_convs.append(conv_op(name=box_conv_name, **conv_kwargs))
         box_norm_name = 'boxnet-conv-norm_{}_{}'.format(level, i)
         this_level_box_norms.append(bn_op(name=box_norm_name, **bn_kwargs))
@@ -201,6 +211,7 @@ class RetinaNetHead(tf.keras.layers.Layer):
         att_name = att_config['name']
         att_type = att_config['type']
         att_size = att_config['size']
+        att_prediction_tower_name = att_config['prediction_tower_name']
         att_convs_i = []
         att_norms_i = []
 
@@ -211,6 +222,9 @@ class RetinaNetHead(tf.keras.layers.Layer):
           for i in range(self._config_dict['num_convs']):
             if level == self._config_dict['min_level']:
               att_conv_name = '{}-conv_{}'.format(att_name, i)
+              if 'kernel_initializer' in conv_kwargs:
+                conv_kwargs['kernel_initializer'] = tf_utils.clone_initializer(
+                    conv_kwargs['kernel_initializer'])
               att_convs_i.append(conv_op(name=att_conv_name, **conv_kwargs))
             att_norm_name = '{}-conv-norm_{}_{}'.format(att_name, level, i)
             this_level_att_norms.append(bn_op(name=att_norm_name, **bn_kwargs))
@@ -238,6 +252,12 @@ class RetinaNetHead(tf.keras.layers.Layer):
         else:
           raise ValueError(
               'Attribute head type {} not supported.'.format(att_type))
+
+        if att_prediction_tower_name and self._config_dict[
+            'share_classification_heads']:
+          raise ValueError(
+              'share_classification_heads cannot be set as True when att_prediction_tower_name is specified.'
+          )
 
         if not self._config_dict['use_separable_conv']:
           att_predictor_kwargs.update({
@@ -304,7 +324,8 @@ class RetinaNetHead(tf.keras.layers.Layer):
         x = conv(x)
         x = norm(x)
         x = self._activation(x)
-      scores[str(level)] = self._classifier(x)
+      classnet_x = x
+      scores[str(level)] = self._classifier(classnet_x)
 
       # box net.
       x = this_level_features
@@ -316,15 +337,38 @@ class RetinaNetHead(tf.keras.layers.Layer):
 
       # attribute nets.
       if self._config_dict['attribute_heads']:
+        prediction_tower_output = {}
         for att_config in self._config_dict['attribute_heads']:
           att_name = att_config['name']
-          x = this_level_features
-          for conv, norm in zip(self._att_convs[att_name],
-                                self._att_norms[att_name][i]):
-            x = conv(x)
-            x = norm(x)
-            x = self._activation(x)
-          attributes[att_name][str(level)] = self._att_predictors[att_name](x)
+          att_type = att_config['type']
+          if self._config_dict[
+              'share_classification_heads'] and att_type == 'classification':
+            attributes[att_name][str(level)] = self._att_predictors[att_name](
+                classnet_x)
+          else:
+
+            def build_prediction_tower(atttribute_name, features,
+                                       feature_level):
+              x = features
+              for conv, norm in zip(
+                  self._att_convs[atttribute_name],
+                  self._att_norms[atttribute_name][feature_level]):
+                x = conv(x)
+                x = norm(x)
+                x = self._activation(x)
+              return x
+
+            prediction_tower_name = att_config['prediction_tower_name']
+            if not prediction_tower_name:
+              attributes[att_name][str(level)] = self._att_predictors[att_name](
+                  build_prediction_tower(att_name, this_level_features, i))
+            else:
+              if prediction_tower_name not in prediction_tower_output:
+                prediction_tower_output[
+                    prediction_tower_name] = build_prediction_tower(
+                        att_name, this_level_features, i)
+              attributes[att_name][str(level)] = self._att_predictors[att_name](
+                  prediction_tower_output[prediction_tower_name])
 
     return scores, boxes, attributes
 
@@ -436,6 +480,9 @@ class RPNHead(tf.keras.layers.Layer):
       for i in range(self._config_dict['num_convs']):
         if level == self._config_dict['min_level']:
           conv_name = 'rpn-conv_{}'.format(i)
+          if 'kernel_initializer' in conv_kwargs:
+            conv_kwargs['kernel_initializer'] = tf_utils.clone_initializer(
+                conv_kwargs['kernel_initializer'])
           self._convs.append(conv_op(name=conv_name, **conv_kwargs))
         norm_name = 'rpn-conv-norm_{}_{}'.format(level, i)
         this_level_norms.append(bn_op(name=norm_name, **bn_kwargs))

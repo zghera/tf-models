@@ -20,10 +20,8 @@ import cv2
 import numpy as np
 
 
-def paste_instance_masks(masks,
-                         detected_boxes,
-                         image_height,
-                         image_width):
+def paste_instance_masks(masks: np.ndarray, detected_boxes: np.ndarray,
+                         image_height: int, image_width: int) -> np.ndarray:
   """Paste instance masks to generate the image segmentation results.
 
   Args:
@@ -39,13 +37,13 @@ def paste_instance_masks(masks,
       the instance masks *pasted* on the image canvas.
   """
 
-  def expand_boxes(boxes, scale):
+  def expand_boxes(boxes: np.ndarray, scale: float) -> np.ndarray:
     """Expands an array of boxes by a given scale."""
     # Reference: https://github.com/facebookresearch/Detectron/blob/master/detectron/utils/boxes.py#L227  # pylint: disable=line-too-long
     # The `boxes` in the reference implementation is in [x1, y1, x2, y2] form,
     # whereas `boxes` here is in [x1, y1, w, h] form
-    w_half = boxes[:, 2] * .5
-    h_half = boxes[:, 3] * .5
+    w_half = boxes[:, 2] * 0.5
+    h_half = boxes[:, 3] * 0.5
     x_c = boxes[:, 0] + w_half
     y_c = boxes[:, 1] + h_half
 
@@ -104,10 +102,8 @@ def paste_instance_masks(masks,
   return segms
 
 
-def paste_instance_masks_v2(masks,
-                            detected_boxes,
-                            image_height,
-                            image_width):
+def paste_instance_masks_v2(masks: np.ndarray, detected_boxes: np.ndarray,
+                            image_height: int, image_width: int) -> np.ndarray:
   """Paste instance masks to generate the image segmentation (v2).
 
   Args:
@@ -187,4 +183,3 @@ def paste_instance_masks_v2(masks,
 
   segms = np.array(segms)
   return segms
-

@@ -89,9 +89,9 @@ depth, label smoothing and dropout.
 
 <details>
 
-We support [ViT](https://arxiv.org/abs/2010.11929) and [DEIT](https://arxiv.org/abs/2012.12877) implementations in a TF
-Vision
-[project](https://github.com/tensorflow/models/tree/master/official/projects/vit). ViT models trained under the DEIT settings:
+We support [ViT](https://arxiv.org/abs/2010.11929) and
+[DEIT](https://arxiv.org/abs/2012.12877) implementations. ViT models trained
+under the DEIT settings:
 
 model     | resolution | Top-1 | Top-5 |
 --------- | :--------: | ----: | ----: |
@@ -293,3 +293,8 @@ training features including:
 | MoViNet-A4-Base | 80 x 3            | 83.48 | 96.16 | [config](https://github.com/tensorflow/models/blob/master/official/projects/movinet/configs/yaml/movinet_a4_k600_8x8.yaml) |
 | MoViNet-A5-Base | 120 x 2           | 84.27 | 96.39 | [config](https://github.com/tensorflow/models/blob/master/official/projects/movinet/configs/yaml/movinet_a5_k600_8x8.yaml) |
 </details>
+
+## More Documentations
+
+Please read through the references in the
+[examples/starter](examples/starter).

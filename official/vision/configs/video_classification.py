@@ -14,7 +14,7 @@
 
 """Video classification configuration definition."""
 import dataclasses
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 from official.core import config_definitions as cfg
 from official.core import exp_factory
 from official.modeling import hyperparams
@@ -41,14 +41,16 @@ class DataConfig(cfg.DataConfig):
   global_batch_size: int = 128
   data_format: str = 'channels_last'
   dtype: str = 'float32'
+  label_dtype: str = 'int32'
   one_hot: bool = True
   shuffle_buffer_size: int = 64
   cache: bool = False
-  input_path: str = ''
+  input_path: Union[str, cfg.base_config.Config] = ''
   is_training: bool = True
   cycle_length: int = 10
   drop_remainder: bool = True
   min_image_size: int = 256
+  zero_centering_image: bool = False
   is_multilabel: bool = False
   output_audio: bool = False
   audio_feature: str = ''
@@ -57,7 +59,9 @@ class DataConfig(cfg.DataConfig):
   aug_max_aspect_ratio: float = 2.0
   aug_min_area_ratio: float = 0.49
   aug_max_area_ratio: float = 1.0
-  aug_type: Optional[str] = None  # 'autoaug', 'randaug', or None
+  aug_type: Optional[
+      common.Augmentation] = None  # AutoAugment and RandAugment.
+  mixup_and_cutmix: Optional[common.MixupAndCutmix] = None
   image_field_key: str = 'image/encoded'
   label_field_key: str = 'clip/label/index'
 
@@ -146,6 +150,7 @@ class VideoClassificationTask(cfg.TaskConfig):
   metrics: Metrics = Metrics()
   init_checkpoint: Optional[str] = None
   init_checkpoint_modules: str = 'all'  # all or backbone
+  freeze_backbone: bool = False
   # Spatial Partitioning fields.
   train_input_partition_dims: Optional[Tuple[int, ...]] = None
   eval_input_partition_dims: Optional[Tuple[int, ...]] = None

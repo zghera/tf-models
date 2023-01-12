@@ -66,6 +66,9 @@ flags.DEFINE_boolean(
     'include_panoptic_masks', False, 'Whether to include category and '
     'instance masks in the result. These are required to run the PQ evaluator '
     'default: False.')
+flags.DEFINE_boolean(
+    'panoptic_skip_crowd', False, 'Whether to skip crowd or not for panoptic '
+    'annotations. default: False.')
 flags.DEFINE_string('output_file_prefix', '/tmp/train', 'Path to output file')
 flags.DEFINE_integer('num_shards', 32, 'Number of shards for output file.')
 _NUM_PROCESSES = flags.DEFINE_integer(
@@ -112,7 +115,7 @@ def generate_coco_panoptics_masks(segments_info, mask_path,
       represent "stuff" and "things" classes respectively.
 
   Returns:
-    A dict with with keys: [u'semantic_segmentation_mask', u'category_mask',
+    A dict with keys: [u'semantic_segmentation_mask', u'category_mask',
       u'instance_mask']. The dict contains 'category_mask' and 'instance_mask'
       only if `include_panoptic_eval_masks` is set to True.
   """
@@ -134,7 +137,9 @@ def generate_coco_panoptics_masks(segments_info, mask_path,
   for idx, segment in enumerate(segments_info):
     segment_id = segment['id']
     category_id = segment['category_id']
-
+    is_crowd = segment['iscrowd']
+    if FLAGS.panoptic_skip_crowd and is_crowd:
+      continue
     if is_category_thing[category_id]:
       encoded_category_id = _THING_CLASS_ID
       instance_id = idx + 1
@@ -226,7 +231,7 @@ def bbox_annotations_to_feature_dict(
       'image/object/is_crowd':
           tfrecord_lib.convert_to_feature(data['is_crowd']),
       'image/object/area':
-          tfrecord_lib.convert_to_feature(data['area']),
+          tfrecord_lib.convert_to_feature(data['area'], 'float_list')
   }
   if include_masks:
     feature_dict['image/object/mask'] = (
