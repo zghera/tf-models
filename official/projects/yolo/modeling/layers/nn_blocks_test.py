@@ -300,6 +300,43 @@ class DarkRouteProcessTest(tf.test.TestCase, parameterized.TestCase):
     self.assertNotIn(None, grad)
     return
 
+class ELANBlockTest(tf.test.TestCase, parameterized.TestCase):
+
+  @parameterized.named_parameters(
+      ('2-4_ELAN', 64, 64, 128, 2, 4, False),
+      ('2-4_ELAN_with_downsample', 64, 64, 128, 2, 4, True),
+  )
+  def test_pass_through(self, width, height, channels, total_split_convs,
+                        convs_per_split, downsample):
+
+    inputs = tf.keras.Input(shape=(width, height, channels))
+
+    filters = channels * 2
+    test_layer = nn_blocks.ELANBlock(filters=filters,
+                                       total_split_convs=total_split_convs,
+                                       convs_per_split=convs_per_split,
+                                       downsample=downsample,
+                                       trainable=False)
+
+    x, x_route = test_layer(inputs)
+
+    if downsample:
+      expected_output_shape = [[
+          None,
+          int(np.ceil(width / 2)),
+          int(np.ceil(height / 2)), filters // 2
+      ], [None,
+          int(np.ceil(width / 2)),
+          int(np.ceil(height / 2)), filters]]
+    else:
+      expected_output_shape = [
+          inputs.shape.as_list(), [None, width, height, filters]
+      ]
+
+    self.assertAllEqual(
+        [x.shape.as_list(), x_route.shape.as_list()], expected_output_shape)
+
+  # TODO(ibrahim): Add test_gradient_pass_though to ELANBlockTest.
 
 if __name__ == '__main__':
   tf.test.main()

@@ -1716,3 +1716,187 @@ class Reorg(tf.keras.layers.Layer):
         x[..., 1::2, 1::2, :]
     ],
                      axis=-1)
+
+class ELANBlock(tf.keras.layers.Layer):
+  """
+    ELAN Block from the YOLOv7 paper blah blah blah...
+    [1] LINK PAPER
+  """
+
+  def __init__(self,
+               filters=1,
+               dilation_rate=1,
+               kernel_initializer="VarianceScaling",
+               bias_initializer="zeros",
+               kernel_regularizer=None,
+               bias_regularizer=None,
+               use_bn=True,
+               use_sync_bn=False,
+               use_separable_conv=False,
+               norm_momentum=0.99,
+               norm_epsilon=0.001,
+               activation="swish",
+               total_split_convs=4,
+               convs_per_split=2,
+               downsample=False,
+               downsample_filter_scale=4,
+               **kwargs):
+    """
+      ELANBlock initilaizer.
+
+      Args:
+        filters: integer for output depth, or the number of features to learn.
+        filter_scale: `int` for filter scale.
+        dilation_rate: tuple to indicate how much to modulate kernel weights and
+          how many pixels in a feature map to skip.
+        kernel_initializer: string to indicate which function to use to initialize
+          weights.
+        bias_initializer: string to indicate which function to use to initialize
+          bias.
+        kernel_regularizer: string to indicate which function to use to
+          regularizer weights.
+        bias_regularizer: string to indicate which function to use to regularizer
+          bias.
+        use_bn: boolean for whether to use batch normalization.
+        use_sync_bn: boolean for whether sync batch normalization statistics.
+          of all batch norm layers to the models global statistics
+          (across all input batches).
+        use_separable_conv: `bool` wether to use separable convs.
+        norm_momentum: float for moment to use for batch normalization.
+        norm_epsilon: float for batch normalization epsilon.
+        activation: string or None for activation function to use in layer,
+          if None activation is replaced by linear.
+        total_split_convs: `int` for the total number of convolution layers that
+          are divide between the different additional splits (not including the two csp partials). 
+          Note that the number of splits = total_split_convs // convs_per_split.
+        convs_per_split: `int` for the number of convolution layers for each additional
+          splits (not including the two csp partials).
+          Note that the number of splits = total_split_convs // convs_per_split.
+        downsample: `bool` for downsampling  the input.
+        downsample_filter_scale: `int` filter scaling for convolution layers of the downsampling.
+        **kwargs: Keyword Arguments.
+    """
+
+    # Block params
+    self._total_split_convs = total_split_convs
+    self._convs_per_split = convs_per_split
+
+    # ConvBN params
+    self._filters = filters
+    self._dilation_rate = dilation_rate
+    self._kernel_initializer = kernel_initializer
+    self._kernel_regularizer = kernel_regularizer
+    self._bias_initializer = bias_initializer
+    self._bias_regularizer = bias_regularizer
+    self._use_bn = use_bn
+    self._use_sync_bn = use_sync_bn
+    self._use_separable_conv = use_separable_conv
+    self._norm_momentum = norm_momentum
+    self._norm_epsilon = norm_epsilon
+    self._activation = activation
+
+    # Downsample params
+    self._downsample = downsample
+    self._downsample_filter_scale = downsample_filter_scale
+
+    if tf.keras.backend.image_data_format() == "channels_last":
+      # format: (batch_size, height, width, channels)
+      self._split_axis = -1
+    else:
+      # format: (batch_size, channels, width, height)
+      self._split_axis = 1
+
+    super().__init__(**kwargs)
+
+  def build(self, input_shape):
+    conv_bn_args = {
+        "kernel_initializer": self._kernel_initializer,
+        "kernel_regularizer": self._kernel_regularizer,
+        "bias_initializer": self._bias_initializer,
+        "bias_regularizer": self._bias_regularizer,
+        "use_bn": self._use_bn,
+        "use_sync_bn": self._use_sync_bn,
+        "use_separable_conv": self._use_separable_conv,
+        "norm_epsilon": self._norm_epsilon,
+        "norm_momentum": self._norm_momentum,
+        "activation": self._activation,
+        "dilation_rate": self._dilation_rate
+    }
+
+    if self._downsample:
+      self._maxpool = tf.keras.layers.MaxPool2D(pool_size=(2, 2),
+                                                strides=2,
+                                                padding="valid")
+
+      self.down_conv1 = ConvBN(self._filters // self._downsample_filter_scale,
+                               kernel_size=(1, 1),
+                               strides=(1, 1),
+                               padding="same",
+                               **conv_bn_args)
+
+      self.down_conv2 = ConvBN(self._filters // self._downsample_filter_scale,
+                               kernel_size=(1, 1),
+                               strides=(1, 1),
+                               padding="same",
+                               **conv_bn_args)
+
+      self.down_conv3 = ConvBN(self._filters // self._downsample_filter_scale,
+                               kernel_size=(3, 3),
+                               strides=(2, 2),
+                               padding="same",
+                               **conv_bn_args)
+
+    self._conv1 = ConvBN(self._filters // 4,
+                         kernel_size=(1, 1),
+                         strides=(1, 1),
+                         padding="same",
+                         **conv_bn_args)
+
+    self._conv2 = ConvBN(self._filters // 4,
+                         kernel_size=(1, 1),
+                         strides=(1, 1),
+                         padding="same",
+                         **conv_bn_args)
+
+    self._splits_convs = []
+    for _ in range(self._total_split_convs // self._convs_per_split):
+      convs = []
+      for _ in range(self._convs_per_split):
+        convs.append(
+            ConvBN(self._filters // 4,
+                   kernel_size=(3, 3),
+                   strides=(1, 1),
+                   padding="same",
+                   **conv_bn_args))
+
+      self._splits_convs.append(convs)
+
+    self._conv3 = ConvBN(self._filters,
+                         kernel_size=(3, 3),
+                         strides=(1, 1),
+                         padding="same",
+                         **conv_bn_args)
+
+    super().build(input_shape)
+
+  def call(self, inputs):
+    if self._downsample:
+      down_x0 = self.down_conv1(self._maxpool(inputs))
+      down_x1 = self.down_conv3(self.down_conv2(inputs))
+      inputs = tf.concat([down_x0, down_x1], self._split_axis)
+
+    x0 = self._conv1(inputs)
+    x1 = self._conv2(inputs)
+
+    split_outputs = []
+    x2 = x1
+    for conv_group in self._splits_convs:
+      for conv in conv_group:
+        x2 = conv(x2)
+
+      split_outputs.append(x2)
+
+    x = tf.concat([x0, x1] + split_outputs, self._split_axis)
+    x = self._conv3(x)
+
+    return inputs, x
