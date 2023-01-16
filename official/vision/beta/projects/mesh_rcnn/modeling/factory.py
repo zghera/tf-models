@@ -18,6 +18,10 @@ from requests import head
 
 import tensorflow as tf  # type: ignore
 
+from official.vision.modeling import backbones
+from official.vision.modeling import decoders
+
+from official.vision.beta.projects.mesh_rcnn.configs.mesh_rcnn import MeshRCNN as mesh_rcnn_cfg
 from official.vision.beta.projects.mesh_rcnn.configs.mesh_rcnn import VoxelHead
 from official.vision.beta.projects.mesh_rcnn.configs.mesh_rcnn import MeshHead
 from official.vision.beta.projects.mesh_rcnn.configs.mesh_rcnn import ZHead
@@ -88,8 +92,28 @@ def build_voxel_head(head_config: VoxelHead,
     bias_regularizer=bias_regularizer,
     activity_regularizer=activity_regularizer,
   )
-
-def build_mesh_rcnn(input_specs, model_config, l2_regularization):
+def build_mesh_rcnn(input_specs: tf.keras.layers.InputSpec,
+                   model_config: mesh_rcnn_cfg,
+                   l2_regularizer: Optional[
+                       tf.keras.regularizers.Regularizer] = None,
+                   backbone: Optional[tf.keras.Model] = None,
+                   decoder: Optional[tf.keras.Model] = None) -> tf.keras.Model:
   """Builds mesh_rcnn model."""
-    
-    return model
+  # TODO: do we need this? - if we do then take it from mask rcnn
+  #norm_activation_config = model_config.norm_activation 
+
+  if not backbone:
+    backbone = backbones.factory.build_backbone(
+        input_specs=input_specs,
+        backbone_config=model_config.backbone,
+        norm_activation_config=norm_activation_config,
+        l2_regularizer=l2_regularizer)
+  backbone_features = backbone(tf.keras.Input(input_specs.shape[1:]))
+
+  if not decoder:
+    decoder = decoders.factory.build_decoder(
+        input_specs=backbone.output_specs,
+        model_config=model_config,
+        l2_regularizer=l2_regularizer)
+
+  return model
