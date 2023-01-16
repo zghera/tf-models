@@ -116,4 +116,4 @@ def build_mesh_rcnn(input_specs: tf.keras.layers.InputSpec,
         model_config=model_config,
         l2_regularizer=l2_regularizer)
 
-    return model
+  return model

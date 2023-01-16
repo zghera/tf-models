@@ -15,7 +15,7 @@ class MeshRCNNModel(tf.keras.Model):
         """
         super(MeshRCNNModel, self).__init__(**kwargs)
         
-
+        
         self.backbone = backbone
         self.decoder = decoder
 
