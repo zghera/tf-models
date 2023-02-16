@@ -61,7 +61,6 @@ class MeshRCNNTask(base_task.Task):
     ) -> tf.data.Dataset:
         """Build input dataset."""
 
-=======
         """Decoder Builder"""
         decoder_cfg = params.decoder.get()
         if params.decoder.type == 'simple_decoder':
