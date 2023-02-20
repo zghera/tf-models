@@ -77,7 +77,6 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
             max_level=max_level,
             num_anchors_per_location=num_anchors_per_location,
             num_convs=1)
-        detection_head = instance_heads.DetectionHead(num_classes=num_classes)
         roi_generator_obj = roi_generator.MultilevelROIGenerator()
         roi_aligner_obj = roi_aligner.MultilevelROIAligner()
     
@@ -98,7 +97,6 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
             backbone,
             decoder,
             rpn_head,
-            detection_head,
             roi_generator_obj,
             roi_aligner_obj,
             voxel_head_obj,
@@ -185,9 +183,6 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
             min_level=min_level,
             max_level=max_level,
             num_anchors_per_location=num_anchors_per_location)
-        detection_head = instance_heads.DetectionHead(
-            num_classes=num_classes,
-            class_agnostic_bbox_pred=class_agnostic_bbox_pred)
         roi_generator_obj = roi_generator.MultilevelROIGenerator()
 
         roi_sampler_cascade = []
@@ -220,7 +215,6 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
             backbone,
             decoder,
             rpn_head,
-            detection_head,
             roi_generator_obj,
             roi_aligner_obj,
             voxel_head_obj,
