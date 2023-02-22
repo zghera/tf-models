@@ -9,5 +9,6 @@ python3 -m pip install -r requirements.txt
 
 printf "\n>>> Creating symbolic link between pre-commit file and local git pre-commit hook..."
 ln -s -f ../../hooks/pre-commit .git/hooks/pre-commit
+mv ./pre-commit ../.git/hooks
 
 printf "\n\nInstallation complete."
