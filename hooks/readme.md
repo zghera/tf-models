@@ -45,6 +45,9 @@ using the following command (run the command in project root directory):
 ```ln -s -f ../../hooks/pre-commit .git/hooks/pre-commit```
 
 ## How to use the linter 
+Make sure the ```pre-commit``` file is an 
+executable; use the command ```sudo chmod +x pre-commit``` to make it an executable.
+
 After running ```git add .```, when you run ```git commit``` on your local machine, the pre-commit script
 will run the linter to scan the ```$PROJECT_DIR``` defined in ```pre-commit```.
 
@@ -62,7 +65,5 @@ will be committed successfully and you should see a message like this:
 You will now be able to push your local changes.
 
 # Important Notes
-- You need to make sure the ```pre-commit``` file is an 
-executable; use the command ```sudo chmod +x pre-commit``` to make it an executable
 - If you run into permission issues with "git add . " command when running the pre-commit hook, 
 use the following command to fix the issue: ```sudo chown -R "${USER:-$(id -un)}" . ```
