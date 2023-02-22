@@ -67,3 +67,4 @@ You will now be able to push your local changes.
 # Important Notes
 - If you run into permission issues with "git add . " command when running the pre-commit hook, 
 use the following command to fix the issue: ```sudo chown -R "${USER:-$(id -un)}" . ```
+- If linter is not called when you run ```git commit```, ensure that the ```pre-commit``` script is located in the ```.git/hooks``` directory.
