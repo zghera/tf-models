@@ -2,7 +2,7 @@
 from statistics import mode
 import tensorflow as tf
 
-from typing import Optional
+from typing import Optional, List
 from official.vision.ops import anchor
 from official.vision.beta.projects.mesh_rcnn.ops.cubify import cubify
 
@@ -16,6 +16,11 @@ class MeshRCNNModel(tf.keras.Model):
                  roi_aligner: tf.keras.layers.Layer,
                  voxel_head: Optional[tf.keras.layers.Layer] = None,
                  mesh_head: Optional[tf.keras.layers.Layer] = None,
+                 min_level: Optional[int] = None,
+                 max_level: Optional[int] = None,
+                 num_scales: Optional[int] = None,
+                 aspect_ratios: Optional[List[float]] = None,
+                 anchor_size: Optional[float] = None,
                  **kwargs):
 
         """Initializes the Mesh R-CNN model.
@@ -27,10 +32,32 @@ class MeshRCNNModel(tf.keras.Model):
         roi_aligner: the ROI aligner.
         voxel_head: the voxel head
         mesh_head: the mesh head
+        min_level: Minimum level in output feature maps.
+        max_level: Maximum level in output feature maps.
+        num_scales: A number representing intermediate scales added on each level.
+            For instances, num_scales=2 adds one additional intermediate anchor
+            scales [2^0, 2^0.5] on each level.
+        aspect_ratios: A list representing the aspect raito anchors added on each
+            level. The number indicates the ratio of width to height. For instances,
+            aspect_ratios=[1.0, 2.0, 0.5] adds three anchors on each scale level.
+        anchor_size: A number representing the scale of size of the base anchor to
+            the feature stride 2^level.
 
         """
         super(MeshRCNNModel, self).__init__(**kwargs)
-        
+        self._config_dict = {
+        'backbone': backbone,
+        'decoder': decoder,
+        'rpn_head': rpn_head,
+        'roi_generator': roi_generator,
+        'roi_aligner': roi_aligner,
+        'min_level': min_level,
+        'max_level': max_level,
+        'num_scales': num_scales,
+        'aspect_ratios': aspect_ratios,
+        'anchor_size': anchor_size,
+        }
+
         self.backbone = backbone
         self.decoder = decoder
         self.rpn_head = rpn_head
