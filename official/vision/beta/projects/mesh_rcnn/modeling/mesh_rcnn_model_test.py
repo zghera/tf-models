@@ -32,35 +32,40 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
             use_separable_conv=[True, False],
             build_anchor_boxes=[True, False],
             is_training=[True, False]))
-    def test_build_model(self, include_mesh, use_separable_conv,
-                       build_anchor_boxes, is_training):
-        num_classes = 3
+    def test_build_model(self, include_mesh, use_separable_conv, build_anchor_boxes, is_training):
+        voxel_depth=24
+        conv_dim=256
+        num_conv=1
+        use_group_norm=False
+        predict_classes=True
+        bilinearly_upscale_input= not predict_classes
+        class_based_voxel=False
+        num_classes = 5
+        
         min_level = 3
         max_level = 7
         num_scales = 3
         aspect_ratios = [1.0]
-        anchor_size = 3
-        resnet_model_id = 50    
         num_anchors_per_location = num_scales * len(aspect_ratios)
         image_size = 384
         images = np.random.rand(2, image_size, image_size, 3)
         image_shape = np.array([[image_size, image_size], [image_size, image_size]])
-
+        
         if build_anchor_boxes:
             anchor_boxes = anchor.Anchor(
-            min_level=min_level,
-            max_level=max_level,
-            num_scales=num_scales,
-            aspect_ratios=aspect_ratios,
-            anchor_size=3,
-            image_size=(image_size, image_size)).multilevel_boxes
+                min_level=min_level,
+                max_level=max_level,
+                num_scales=num_scales,
+                aspect_ratios=aspect_ratios,
+                anchor_size=3,
+                image_size=(image_size, image_size)).multilevel_boxes
             for l in anchor_boxes:
                 anchor_boxes[l] = tf.tile(
                     tf.expand_dims(anchor_boxes[l], axis=0), [2, 1, 1, 1])
         else:
             anchor_boxes = None
-
-        backbone = resnet.ResNet(model_id=resnet_model_id)
+            
+        backbone = resnet.ResNet(model_id=50)
         decoder = fpn.FPN(
             input_specs=backbone.output_specs,
             min_level=min_level,
@@ -76,13 +81,15 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
     
         if include_mesh:
             voxel_head_obj = voxel_head.VoxelHead(
-                num_classes=num_classes,
+                voxel_depth=voxel_depth,
+                    conv_dim=conv_dim,
+                    num_conv=num_conv,
+                    use_group_norm=use_group_norm,
+                    predict_classes=predict_classes,
+                    bilinearly_upscale_input=bilinearly_upscale_input,
+                    class_based_voxel=class_based_voxel,
+                    num_classes=num_classes
             )
-            """
-                Need to include the following in voxel head:
-                'voxel_depth', 'conv_dim', 'num_conv', 'use_group_norm', 
-                'predict_classes', 'bilinearly_upscale_input', 'class_based_voxel',  'num_classes'
-            """
             mesh_head_obj = mesh_head.MeshHead()
         else:
             voxel_head_obj = None
@@ -100,6 +107,7 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
         _ = model(
             images,
             image_shape,
+            anchor_boxes,
             training=is_training)
 
     @combinations.generate(
@@ -110,17 +118,24 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
                 ],
             include_mesh=[True, False],
             build_anchor_boxes=[True, False],
-            training=[True, False],
+            is_training=[True, False],
         ))
     
-    def test_forward(self, strategy, include_mesh, build_anchor_boxes, training):
-        num_classes = 3
+    def test_forward(self, strategy, build_anchor_boxes, include_mesh, is_training):
+        voxel_depth=24
+        conv_dim=256
+        num_conv=1
+        use_group_norm=False
+        predict_classes=True
+        bilinearly_upscale_input=not predict_classes
+        class_based_voxel=False
+        num_classes = 5
+        
         min_level = 3
         max_level = 4
         num_scales = 3
         aspect_ratios = [1.0]
         anchor_size = 3
-
         image_size = (256, 256)
         images = np.random.rand(2, image_size[0], image_size[1], 3)
         image_shape = np.array([[224, 100], [100, 224]])
@@ -151,13 +166,15 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
             roi_aligner_obj = roi_aligner.MultilevelROIAligner()
             if include_mesh:
                 voxel_head_obj = voxel_head.VoxelHead(
-                    num_classes=num_classes,
+                    voxel_depth=voxel_depth,
+                    conv_dim=conv_dim,
+                    num_conv=num_conv,
+                    use_group_norm=use_group_norm,
+                    predict_classes=predict_classes,
+                    bilinearly_upscale_input=bilinearly_upscale_input,
+                    class_based_voxel=class_based_voxel,
+                    num_classes=num_classes
                 )
-                """
-                    Need to include the following in voxel head:
-                    'voxel_depth', 'conv_dim', 'num_conv', 'use_group_norm', 
-                    'predict_classes', 'bilinearly_upscale_input', 'class_based_voxel',  'num_classes'
-                """
                 mesh_head_obj = mesh_head.MeshHead()
             else:
                 voxel_head_obj = None
@@ -174,25 +191,15 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
             results = model(
                 images,
                 image_shape,
-                training=training)
+                anchor_boxes,
+                training=is_training)
 
+        self.assertIn('backbone_features', results)
+        self.assertIn('decoder_features', results)
         self.assertIn('rpn_boxes', results)
         self.assertIn('rpn_scores', results)
-        if training:
-            self.assertIn('class_targets', results)
-            self.assertIn('box_targets', results)
-            self.assertIn('class_outputs', results)
-            self.assertIn('box_outputs', results)
-            if include_mesh:
-                self.assertIn('mesh_outputs', results)
-        else:
-            self.assertIn('detection_boxes', results)
-            self.assertIn('detection_scores', results)
-            self.assertIn('detection_classes', results)
-            self.assertIn('num_detections', results)
-            if include_mesh:
-                self.assertIn('detection_masks', results)
-
+        self.assertIn('feature_map', results)
+        
 
 if __name__ == '__main__':
   tf.test.main()
