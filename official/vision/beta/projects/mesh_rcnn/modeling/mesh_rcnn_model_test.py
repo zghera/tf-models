@@ -46,6 +46,7 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
         max_level = 7
         num_scales = 3
         aspect_ratios = [1.0]
+        anchor_size = 3
         num_anchors_per_location = num_scales * len(aspect_ratios)
         image_size = 384
         images = np.random.rand(2, image_size, image_size, 3)
@@ -57,7 +58,7 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
                 max_level=max_level,
                 num_scales=num_scales,
                 aspect_ratios=aspect_ratios,
-                anchor_size=3,
+                anchor_size=anchor_size,
                 image_size=(image_size, image_size)).multilevel_boxes
             for l in anchor_boxes:
                 anchor_boxes[l] = tf.tile(
@@ -101,7 +102,13 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
             roi_generator_obj,
             roi_aligner_obj,
             voxel_head_obj,
-            mesh_head_obj)
+            mesh_head_obj,
+            
+            min_level=min_level,
+            max_level=max_level,
+            num_scales=num_scales,
+            aspect_ratios=aspect_ratios,
+            anchor_size=anchor_size)
 
         # Results will be checked in test_forward.
         _ = model(
@@ -186,7 +193,13 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
                 roi_generator_obj,
                 roi_aligner_obj,
                 voxel_head_obj,
-                mesh_head_obj)
+                mesh_head_obj,
+                
+                min_level=min_level,
+                max_level=max_level,
+                num_scales=num_scales,
+                aspect_ratios=aspect_ratios,
+                anchor_size=anchor_size)
 
             results = model(
                 images,
