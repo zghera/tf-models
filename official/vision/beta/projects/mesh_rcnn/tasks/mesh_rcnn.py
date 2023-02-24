@@ -4,6 +4,13 @@ from official.core import base_task
 from official.core import task_factory
 from official.vision.beta.projects.mesh_rcnn.configs import mesh_rcnn as exp_cfg
 from official.vision.beta.projects.mesh_rcnn.modeling import factory
+from official.vision.beta.projects.mesh_rcnn.losses import mesh_losses
+
+import tensorflow as tf
+
+@task_factory.register_task_cls(exp_cfg.MeshRCNNTask)
+
+
 from official.vision.beta.projects.mesh_rcnn import optimization
 from official.modeling.optimization import ema_optimizer
 from official.modeling import performance
@@ -118,9 +125,36 @@ class MeshRCNNTask(base_task.Task):
         """Build metrics."""
         return
 
-    def build_losses(self, outputs, labels, aux_losses=None):
-        """Build Mesh RCNN losses."""
-        return
+    def build_losses(self):
+        """Build Mesh R-CNN losses."""
+        loss_config = exp_cfg.MeshLosses
+        mesh_loss = mesh_losses.MeshLoss(loss_config.voxel_weight,
+                         loss_config.chamfer_weight,
+                         loss_config.normal_weight,
+                         loss_config.edge_weight,
+                         loss_config.true_num_samples,
+                         loss_config.pred_num_samples)
+
+        total_loss, voxel_loss, chamfer_loss_, normal_loss_, edge_loss_ = \
+        mesh_loss(
+            voxels_true,
+            voxels_pred,
+            meshes_true,
+            meshes_pred,
+            edges_pred,
+            edges_mask_pred,
+        )
+
+        losses = {
+            'total_loss' : total_loss,
+            'voxel_loss' : voxel_loss,
+            'chamfer_loss' : chamfer_loss_,
+            'normal_loss' : normal_loss_,
+            'edge_loss' : edge_loss_,
+        }
+        return losses
+        
+
 
     def initialize(self, model: tf.keras.Model):
         """Loading pretrained checkpoint."""
@@ -140,7 +174,40 @@ class MeshRCNNTask(base_task.Task):
         Returns:
         A dictionary of logs.
         """
-        return
+        images, labels = inputs
+        with tf.GradientTape() as tape:
+
+      # prediction
+            outputs = model(images, training=True)
+
+      # Casting output layer as float32 is necessary when mixed_precision is
+      # mixed_float16 or mixed_bfloat16 to ensure output is casted as float32.
+            outputs = tf.nest.map_structure(lambda x: tf.cast(x, tf.float32), outputs)
+
+            loss = self.build_losses()
+
+            scaled_loss = loss/tf.distribute.get_strategy().num_replicas_in_sync
+
+            if isinstance(optimizer, tf.keras.mixed_precision.LossScaleOptimizer):
+                scaled_loss = optimizer.get_scaled_loss(scaled_loss)
+
+        # compute the gradient
+        tvars = model.trainable_variables
+        grads = tape.gradient(scaled_loss, tvars)
+        
+        # Get unscaled loss if we are using the loss scale optimizer on fp16
+        if isinstance(optimizer, tf.keras.mixed_precision.LossScaleOptimizer):
+            grads = optimizer.get_unscaled_gradients(grads)
+
+        # Apply gradients to the model
+        optimizer.apply_gradients(list(zip(grads, tvars)))
+        logs = {self.loss: loss}
+
+        # Compute all metrics
+        if metrics:
+            self.process_metrics(metrics, outputs, labels)
+
+        return logs
 
     def validation_step(self, inputs, model, metrics=None):
         """Validatation step.
