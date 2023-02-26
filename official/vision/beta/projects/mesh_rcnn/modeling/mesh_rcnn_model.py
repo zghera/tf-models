@@ -64,13 +64,14 @@ class MeshRCNNModel(tf.keras.Model):
         self.roi_aligner = roi_aligner
         self.voxel_head = voxel_head
         self.mesh_head = mesh_head
+        self._include_mesh = mesh_head and voxel_head is not None
 
     def call(self,
             images: tf.Tensor,
             image_shape: tf.Tensor,
             anchor_boxes: Optional[Mapping[str, tf.Tensor]] = None,
             training: Optional[bool] = None
-            ):
+            ) -> Mapping[str, tf.Tensor]:
         
         model_outputs = {}
 
@@ -100,8 +101,8 @@ class MeshRCNNModel(tf.keras.Model):
                 image_size=(image_height, image_width)).multilevel_boxes
             for l in anchor_boxes:
                 anchor_boxes[l] = tf.tile(
-                    tf.expand_dims(anchor_boxes[l], axis=0),
-                    [tf.shape(images)[0], 1, 1, 1])
+                        tf.expand_dims(anchor_boxes[l], axis=0),
+                        [tf.shape(images)[0], 1, 1, 1])
 
         # Generate RoIs.
         current_rois, _ = self.roi_generator(rpn_boxes, rpn_scores, anchor_boxes,
@@ -111,6 +112,10 @@ class MeshRCNNModel(tf.keras.Model):
         roi_features = self.roi_aligner(model_outputs['decoder_features'], current_rois)
         model_outputs.update({'feature_map': roi_features})
 
+        # check if include mesh is false
+        if not self._include_mesh:
+            return model_outputs
+        
         # get voxels 
         voxels = self.voxel_head(roi_features) 
 
