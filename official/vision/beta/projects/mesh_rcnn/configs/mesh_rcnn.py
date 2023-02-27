@@ -21,6 +21,7 @@ from official.core import config_definitions as cfg
 from official.core import exp_factory
 from official.modeling import hyperparams
 from official.vision.beta.projects.mesh_rcnn import optimization
+#from official.vision.beta.projects.mesh_rcnn.tasks import mesh_rcnn
 from official.vision.configs import common
 from official.vision.configs import decoders
 from official.vision.configs import backbones

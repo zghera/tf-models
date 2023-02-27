@@ -28,19 +28,20 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
 
     @combinations.generate(
         combinations.combine(
-            include_mesh=[True, False],
+            include_mesh=[True, False], # includes voxel and mesh head
             use_separable_conv=[True, False],
             build_anchor_boxes=[True, False],
             is_training=[True, False]))
     def test_build_model(self, include_mesh, use_separable_conv, build_anchor_boxes, is_training):
+        
         voxel_depth=24
         conv_dim=256
-        num_conv=1
+        num_conv=2
         use_group_norm=False
-        predict_classes=True
-        bilinearly_upscale_input= not predict_classes
-        class_based_voxel=False
-        num_classes = 5
+        predict_classes=True  # True for Pix3D
+        bilinearly_upscale_input= not predict_classes 
+        class_based_voxel=False  #If `predict_classes` is True but `class_based_voxel` is False, we will only predict 1 class. 
+        num_classes = 1
         
         min_level = 3
         max_level = 7
@@ -48,7 +49,7 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
         aspect_ratios = [1.0]
         anchor_size = 3
         num_anchors_per_location = num_scales * len(aspect_ratios)
-        image_size = 384
+        image_size = 256
         images = np.random.rand(2, image_size, image_size, 3)
         image_shape = np.array([[image_size, image_size], [image_size, image_size]])
         
@@ -80,16 +81,16 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
         roi_generator_obj = roi_generator.MultilevelROIGenerator()
         roi_aligner_obj = roi_aligner.MultilevelROIAligner()
     
-        if include_mesh:
+        if include_mesh: #if not necessary to test without voxel/mesh head remove include_mesh in model
             voxel_head_obj = voxel_head.VoxelHead(
                 voxel_depth=voxel_depth,
-                    conv_dim=conv_dim,
-                    num_conv=num_conv,
-                    use_group_norm=use_group_norm,
-                    predict_classes=predict_classes,
-                    bilinearly_upscale_input=bilinearly_upscale_input,
-                    class_based_voxel=class_based_voxel,
-                    num_classes=num_classes
+                conv_dim=conv_dim,
+                num_conv=num_conv,
+                use_group_norm=use_group_norm,
+                predict_classes=predict_classes,
+                bilinearly_upscale_input=bilinearly_upscale_input,
+                class_based_voxel=class_based_voxel,
+                num_classes=num_classes
             )
             mesh_head_obj = mesh_head.MeshHead()
         else:
@@ -116,7 +117,7 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
             image_shape,
             anchor_boxes,
             training=is_training)
-
+        
     @combinations.generate(
         combinations.combine(
             strategy=[
@@ -124,19 +125,25 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
                 strategy_combinations.one_device_strategy_gpu,
                 ],
             include_mesh=[True, False],
+            use_separable_conv=[True, False],
             build_anchor_boxes=[True, False],
             is_training=[True, False],
+            predict_classes=[True, False],
+            use_group_norm=[True,False],
+            class_based_voxel=[True,False]
         ))
-    
-    def test_forward(self, strategy, build_anchor_boxes, include_mesh, is_training):
+
+    def test_forward(self, strategy, include_mesh, use_separable_conv, build_anchor_boxes, is_training, 
+                     predict_classes, use_group_norm, class_based_voxel):
+        
         voxel_depth=24
         conv_dim=256
-        num_conv=1
-        use_group_norm=False
-        predict_classes=True
-        bilinearly_upscale_input=not predict_classes
-        class_based_voxel=False
-        num_classes = 5
+        num_conv=2
+        use_group_norm=use_group_norm
+        predict_classes=predict_classes  # True for Pix3D
+        bilinearly_upscale_input= not predict_classes 
+        class_based_voxel=class_based_voxel  #If `predict_classes` is True but `class_based_voxel` is False, we will only predict 1 class. 
+        num_classes = 1
         
         min_level = 3
         max_level = 4
@@ -164,6 +171,7 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
             decoder = fpn.FPN(
                 min_level=min_level,
                 max_level=max_level,
+                use_separable_conv=use_separable_conv,
                 input_specs=backbone.output_specs)
             rpn_head = dense_prediction_heads.RPNHead(
                 min_level=min_level,
