@@ -38,9 +38,9 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
         conv_dim=256
         num_conv=2
         use_group_norm=False
-        predict_classes=True  # True for Pix3D
+        predict_classes=False
         bilinearly_upscale_input= not predict_classes 
-        class_based_voxel=False  #If `predict_classes` is True but `class_based_voxel` is False, we will only predict 1 class. 
+        class_based_voxel=True  #If `predict_classes` is True but `class_based_voxel` is False, we will only predict 1 class. 
         num_classes = 1
         
         min_level = 3
