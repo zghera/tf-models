@@ -40,7 +40,7 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
         use_group_norm=False
         predict_classes=False
         bilinearly_upscale_input= not predict_classes 
-        class_based_voxel=True  #If `predict_classes` is True but `class_based_voxel` is False, we will only predict 1 class. 
+        class_based_voxel=True 
         num_classes = 1
         
         min_level = 3
