@@ -220,7 +220,17 @@ class MeshRCNNTask(base_task.Task):
         Returns:
         A dictionary of logs.
         """
-        return
+        images, labels = inputs
+        outputs = model(
+            images,
+            image_shape=labels['image_info'][:, 1, :],
+            training=False,
+        )
+
+        logs = {self.loss: 0}
+        self.build_metrics(labels, outputs, logs)
+
+        return logs
 
     def aggregate_logs(self, state=None, step_outputs=None):
         """Get Metric Results."""
