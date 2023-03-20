@@ -38,7 +38,7 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
         conv_dim=256
         num_conv=2
         use_group_norm=False
-        predict_classes=False
+        predict_classes=False # should be False
         bilinearly_upscale_input= not predict_classes 
         class_based_voxel=True 
         num_classes = 1

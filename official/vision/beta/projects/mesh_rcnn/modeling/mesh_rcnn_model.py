@@ -105,6 +105,7 @@ class MeshRCNNModel(tf.keras.Model):
                         [tf.shape(images)[0], 1, 1, 1])
 
         # Generate RoIs.
+        print(f'image shape: {image_shape}')
         current_rois, _ = self.roi_generator(rpn_boxes, rpn_scores, anchor_boxes,
                                             image_shape, training)
 
@@ -117,7 +118,10 @@ class MeshRCNNModel(tf.keras.Model):
             return model_outputs
         
         # get voxels 
+        print(f'Voxel Head Input: {tf.shape(roi_features)}')
         voxels = self.voxel_head(roi_features) 
+        print(f'Voxel Head Output: {tf.shape(voxels)}')
+
 
         # get cubified mesh
         mesh = cubify(voxels=voxels, thresh=0.5)
