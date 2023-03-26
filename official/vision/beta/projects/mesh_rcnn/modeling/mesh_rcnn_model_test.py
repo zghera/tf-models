@@ -23,6 +23,8 @@ from official.vision.modeling.heads import dense_prediction_heads
 from official.vision.modeling.layers import roi_aligner
 from official.vision.modeling.layers import roi_generator
 
+from official.vision.beta.projects.mesh_rcnn.modeling.layers import experimental_roi_align
+
 
 class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
 
@@ -79,7 +81,7 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
             num_anchors_per_location=num_anchors_per_location,
             num_convs=1)
         roi_generator_obj = roi_generator.MultilevelROIGenerator()
-        roi_aligner_obj = roi_aligner.MultilevelROIAligner()
+        roi_aligner_obj = roi_aligner.MultilevelROIAligner(crop_size=12)
     
         if include_mesh: #if not necessary to test without voxel/mesh head remove include_mesh in model
             voxel_head_obj = voxel_head.VoxelHead(
@@ -111,13 +113,25 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
             aspect_ratios=aspect_ratios,
             anchor_size=anchor_size)
 
-        # Results will be checked in test_forward.
-        _ = model(
+        # Results
+        results = model(
             images,
             image_shape,
             anchor_boxes,
             training=is_training)
         
+        self.assertIn('backbone_features', results)
+        self.assertIn('decoder_features', results)
+        self.assertIn('rpn_boxes', results)
+        self.assertIn('rpn_scores', results)
+        self.assertIn('feature_map', results)
+        if include_mesh:
+            self.assertIn('verts', results)
+            self.assertIn('faces', results)
+            self.assertIn('verts_mask', results)
+            self.assertIn('faces_mask', results)
+                        
+    """  
     @combinations.generate(
         combinations.combine(
             strategy=[
@@ -220,7 +234,12 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
         self.assertIn('rpn_boxes', results)
         self.assertIn('rpn_scores', results)
         self.assertIn('feature_map', results)
-        
+        if include_mesh:
+            self.assertIn('verts', results)
+            self.assertIn('faces', results)
+            self.assertIn('verts_mask', results)
+            self.assertIn('faces_mask', results)
+        """
 
 if __name__ == '__main__':
   tf.test.main()

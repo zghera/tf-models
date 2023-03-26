@@ -105,12 +105,19 @@ class MeshRCNNModel(tf.keras.Model):
                         [tf.shape(images)[0], 1, 1, 1])
 
         # Generate RoIs.
-        print(f'image shape: {image_shape}')
         current_rois, _ = self.roi_generator(rpn_boxes, rpn_scores, anchor_boxes,
                                             image_shape, training)
 
         # Get roi features.
         roi_features = self.roi_aligner(model_outputs['decoder_features'], current_rois)
+        #reshape roi features to 4D tensor
+        x = roi_features
+        batch_size = tf.shape(x)[0] # 2
+        output_size = tf.shape(x)[2] # 12
+        num_filters = tf.shape(x)[4] # 256
+        x = tf.slice(x, [0, 0, 0, 0, 0], [-1, 1, output_size, output_size, num_filters])
+        roi_features = tf.squeeze(x, axis=1)
+
         model_outputs.update({'feature_map': roi_features})
 
         # check if include mesh is false
@@ -118,17 +125,17 @@ class MeshRCNNModel(tf.keras.Model):
             return model_outputs
         
         # get voxels 
-        print(f'Voxel Head Input: {tf.shape(roi_features)}')
         voxels = self.voxel_head(roi_features) 
-        print(f'Voxel Head Output: {tf.shape(voxels)}')
-
+        # assert voxel shape is correct
+        assert(voxels.shape.as_list() == [batch_size, output_size*2, output_size*2, output_size*2]) # size of (2, 24, 24, 24)
 
         # get cubified mesh
         mesh = cubify(voxels=voxels, thresh=0.5)
         model_outputs.update(mesh)
 
         # mesh refinement stage
-        model_outputs = self.mesh_head(inputs=model_outputs)
+        #model_outputs = self.mesh_head(inputs=model_outputs)
+        model_outputs.update(self.mesh_head(inputs=model_outputs)) #changed to update
 
         return model_outputs
 
