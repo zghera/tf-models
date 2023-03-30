@@ -160,12 +160,12 @@ def create_tf_example(image: dict):
     structure of the Pix3D folder is incorrect.
   """
 
-  img_height = image['height']
-  img_width = image['width']
-  img_filename = image['filename']
+  img_height = image['img_size'][0]
+  img_width = image['img_size'][1]
+  img_filename = image['img']
   img_id = image['image_id']
   pix3d_dir = image['pix3d_dir']
-  mask_filename = image['segmentation']
+  mask_filename = image['mask']
   model = image['model']
   voxel_file = image['voxel']
 
@@ -203,8 +203,12 @@ def create_tf_example(image: dict):
 
   # Create camera annotations
   rot_mat = image['rot_mat']
+  print(rot_mat)
   trans_mat = image['trans_mat']
-  intrinstic_mat = image['K']
+  intrinstic_mat = []
+  intrinstic_mat.append(image['focal_length'] * (img_width/32))
+  intrinstic_mat.append(img_width/2)
+  intrinstic_mat.append(img_height/2)
 
   feature_dict.update(
       {'camera/rot_mat': convert_to_feature(rot_mat),
@@ -218,15 +222,15 @@ def create_tf_example(image: dict):
   xmax = float(xmax) / img_width
   ymax = float(ymax) / img_height
 
-  img_class_id = image['category_id']
-  is_crowd = image['iscrowd']
+  ##img_class_id = image['category_id']
+  is_crowd = 0
 
   feature_dict.update({
       'image/object/bbox/xmin': convert_to_feature([float(xmin)]),
       'image/object/bbox/ymin': convert_to_feature([float(ymin)]),
       'image/object/bbox/xmax': convert_to_feature([float(xmax)]),
       'image/object/bbox/ymax': convert_to_feature([float(ymax)]),
-      'image/object/class/label': convert_to_feature([img_class_id]),
+      'image/object/class/label': convert_to_feature(image['category']),
       'image/object/is_crowd': convert_to_feature([is_crowd])})
 
   example = tf.train.Example(
@@ -308,30 +312,37 @@ def generate_annotations(annotation_dict: dict, pix3d_dir: str) -> List:
       TFRecord.
   """
 
-  raw_annotations = annotation_dict['annotations']
-  images = annotation_dict['images']
+  #raw_annotations = annotation_dict['annotations']
+  #images = annotation_dict['images']
 
-  image_info = {}
-  for image in images:
-    image_info[image['id']] = {'filename': image['file_name'],
-                               'height': image['height'],
-                               'width': image['width']}
+  #image_info = {}
+  #for image in images:
+    #image_info[image['id']] = {'filename': image['file_name'],
+                               #'height': image['height'],
+                               #'width': image['width']}
 
   annotations = []
-  for annotation in raw_annotations:
-    info = image_info[annotation['id']]
-
+  
+  for id, info in enumerate(annotation_dict):
     annotations.append(
-        {'filename': info['filename'], 'height': info['height'],
-         'width': info['width'], 'iscrowd': annotation['iscrowd'],
-         'segmentation': annotation['segmentation'],
-         'model': annotation['model'],
-         'category_id': annotation['category_id'],
-         'K': annotation['K'], 'bbox': annotation['bbox'],
-         'trans_mat': annotation['trans_mat'], 'area': annotation['area'],
-         'image_id': annotation['image_id'], 'rot_mat': annotation['rot_mat'],
-         'voxel': annotation['voxel'], 'pix3d_dir': pix3d_dir})
-
+      {'img': info['img'], 'category': info['category'], 'img_size': info['img_size'],
+       '2d_keypoints': info['2d_keypoints'], 'mask': info['mask'], 'img_source': info['img_source'],
+       'model': info['model'], 'model_raw': info['model_raw'], 'model_source': info['model_source'],
+       '3d_keypoints': info['3d_keypoints'], 'voxel': info['voxel'], 'rot_mat': info['rot_mat'],
+       'trans_mat': info['trans_mat'], 'focal_length': info['focal_length'], 'cam_position': info['cam_position'],
+       'inplane_rotation': info['inplane_rotation'], 'truncated': info['truncated'], 'occluded': info['occluded'],
+       'slightly_occluded': info['slightly_occluded'], 'bbox': info['bbox'], 'image_id': id, 'pix3d_dir': pix3d_dir})
+    #annotations.append(
+        #{'filename': info['filename'], 'height': info['height'],
+         #'width': info['width'], 'iscrowd': annotation['iscrowd'],
+         #'segmentation': annotation['segmentation'],
+         #'model': annotation['model'],
+         #'category_id': annotation['category_id'],
+         #'K': annotation['K'], 'bbox': annotation['bbox'],
+         #'trans_mat': annotation['trans_mat'], 'area': annotation['area'],
+         #'image_id': annotation['image_id'], 'rot_mat': annotation['rot_mat'],
+         #'voxel': annotation['voxel'], 'pix3d_dir': pix3d_dir})
+    
   return annotations
 
 
