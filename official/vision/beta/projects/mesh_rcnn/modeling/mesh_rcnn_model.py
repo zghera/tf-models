@@ -110,14 +110,6 @@ class MeshRCNNModel(tf.keras.Model):
 
         # Get roi features.
         roi_features = self.roi_aligner(model_outputs['decoder_features'], current_rois)
-        #reshape roi features to 4D tensor
-        x = roi_features
-        batch_size = tf.shape(x)[0] # 2
-        output_size = tf.shape(x)[2] # 12
-        num_filters = tf.shape(x)[4] # 256
-        x = tf.slice(x, [0, 0, 0, 0, 0], [-1, 1, output_size, output_size, num_filters])
-        roi_features = tf.squeeze(x, axis=1)
-
         model_outputs.update({'feature_map': roi_features})
 
         # check if include mesh is false
@@ -127,7 +119,7 @@ class MeshRCNNModel(tf.keras.Model):
         # get voxels 
         voxels = self.voxel_head(roi_features) 
         # assert voxel shape is correct
-        assert(voxels.shape.as_list() == [batch_size, output_size*2, output_size*2, output_size*2]) # size of (2, 24, 24, 24)
+        assert(voxels.shape.as_list() == [roi_features[0], roi_features[2]*2, roi_features[2]*2, roi_features[2]*2]) # size of (2, 24, 24, 24)
 
         # get cubified mesh
         mesh = cubify(voxels=voxels, thresh=0.5)

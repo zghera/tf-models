@@ -1,21 +1,41 @@
-import tensorflow as tf
-"""
-ROIAlign test function that returns a 4D tensor of size
-[batch_size, num_rois, output_size[0], output_size[1]]
-similarly to the PyTorch implementation.
 
-Not sure if this works correctly yet, may be unnecessary.
-"""
+import tensorflow as tf
+from typing import Mapping
+
+@tf.keras.utils.register_keras_serializable(package='Vision')
 class ROIAlign(tf.keras.layers.Layer):
-    def __init__(self, output_size: int = 12, spatial_scale: float = 1.0):
+    def __init__(self, output_size: int = 12, spatial_scale: float = 1.0, **kwargs):
         super(ROIAlign, self).__init__()
         self.output_size = output_size
         self.spatial_scale = spatial_scale
+        
+        """Initializes a ROI aligner in a similar manner to the PyTorch implementation
 
-    def call(self, inputs):
-        x, rois = inputs
+        Args:
+        output_size: An `int` of the output size of the cropped features.
+        spatial_scale: A `float` in [0, 1] of the subpixel sample offset.
+        **kwargs: Additional keyword arguments passed to Layer.
+        """
 
+    def call(self, x: Mapping[str, tf.Tensor],
+                   rois: tf.Tensor,):
+        """ Generates ROIs.
+        
+        Args:
+        x: A dictionary with key as pyramid level and value as features.
+            The features are in shape of
+            [batch_size, height_l, width_l, num_filters].
+        rois: A 3-D `tf.Tensor` of shape [batch_size, num_boxes, 4]. Each row
+            represents a box with [y1, x1, y2, x2] in un-normalized coordinates.
+            from grid point.
+
+        Returns:
+        A 4-D `tf.Tensor` representing feature crop of shape
+        [batch_size, crop_size, crop_size, num_filters].
+        """
+    
         batch_size, channels, height, width = tf.unstack(tf.shape(x))
+        print(tf.unstack(tf.shape(x)))
 
         num_rois = tf.shape(rois)[0]
 
@@ -40,7 +60,7 @@ class ROIAlign(tf.keras.layers.Layer):
         # Reshape the pooled features tensor to match the output size
         pooled_features = tf.reshape(pooled_features, [batch_size, num_rois, -1])
 
-        pooled_features = tf.reshape(pooled_features, [batch_size, num_rois, self.output_size[0], self.output_size[1]])
+        pooled_features = tf.reshape(pooled_features, [batch_size, self.output_size[0], self.output_size[1], num_rois])
 
         return pooled_features
 
