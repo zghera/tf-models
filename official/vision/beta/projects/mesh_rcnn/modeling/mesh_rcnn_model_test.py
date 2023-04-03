@@ -81,7 +81,7 @@ class MeshRCNNModelTest(parameterized.TestCase, tf.test.TestCase):
             num_anchors_per_location=num_anchors_per_location,
             num_convs=1)
         roi_generator_obj = roi_generator.MultilevelROIGenerator()
-        roi_aligner_obj = experimental_roi_align.ROIAlign()
+        roi_aligner_obj = roi_aligner.MultilevelROIAligner()
     
         if include_mesh: #if not necessary to test without voxel/mesh head remove include_mesh in model
             voxel_head_obj = voxel_head.VoxelHead(

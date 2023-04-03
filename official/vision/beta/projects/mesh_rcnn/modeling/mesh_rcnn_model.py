@@ -37,7 +37,7 @@ class MeshRCNNModel(tf.keras.Model):
         num_scales: A number representing intermediate scales added on each level.
             For instances, num_scales=2 adds one additional intermediate anchor
             scales [2^0, 2^0.5] on each level.
-        aspect_ratios: A list representing the aspect raito anchors added on each
+        aspect_ratios: A list representing the aspect ratio anchors added on each
             level. The number indicates the ratio of width to height. For instances,
             aspect_ratios=[1.0, 2.0, 0.5] adds three anchors on each scale level.
         anchor_size: A number representing the scale of size of the base anchor to
@@ -116,11 +116,12 @@ class MeshRCNNModel(tf.keras.Model):
         if not self._include_mesh:
             return model_outputs
         
+        print(roi_features.shape.as_list()) 
         # get voxels 
         voxels = self.voxel_head(roi_features) 
         # assert voxel shape is correct
-        assert(voxels.shape.as_list() == [roi_features[0], roi_features[2]*2, roi_features[2]*2, roi_features[2]*2]) # size of (2, 24, 24, 24)
-
+        print(voxels.shape.as_list()) 
+        
         # get cubified mesh
         mesh = cubify(voxels=voxels, thresh=0.5)
         model_outputs.update(mesh)
