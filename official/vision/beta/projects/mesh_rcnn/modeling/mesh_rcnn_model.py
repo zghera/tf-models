@@ -109,35 +109,31 @@ class MeshRCNNModel(tf.keras.Model):
                                             image_shape, training)
         
         # Get roi features.
-        roi_features = self.roi_aligner(model_outputs['decoder_features'], current_rois)
+        roi_features = self.roi_aligner(model_outputs['decoder_features'], current_rois) # shape is [2, 1000, 12, 12, 256]
+
+        # slice num_rois down to one roi
+        batch_size, num_rois, height, width, filters = (
+                        roi_features.get_shape().as_list())
+        sliced_tensor = tf.slice(roi_features, begin=[0, 0, 0, 0, 0], size=[batch_size, 1, height, width, filters])
+
+        # Use tf.squeeze to remove the dimensions with size 1
+        roi_features = tf.squeeze(sliced_tensor, axis=1) # shape is now [2, 12, 12, 256]
+
         model_outputs.update({'feature_map': roi_features})
 
         # check if include mesh is false
         if not self._include_mesh:
             return model_outputs
-        """
-        print(roi_features.shape.as_list()) # [2, 1000, 12, 12, 256]
-        print(model_outputs['decoder_features']) # [2, 2, 2, 256]
-                                                 # [2, 32, 32, 256]
-        print(current_rois.shape.as_list()) # [2, 1000, 4]
-        """
 
-        # Reshape from [batch_size, num_boxes, crop_size, crop_size, num_filters]
-        # to [batch_size, crop_size, crop_size, num_filters * num_boxes]
-        batch_size, num_rois, height, width, filters = (
-                        roi_features.get_shape().as_list())
-        roi_features = tf.reshape(
-                        roi_features, [batch_size, height, width, filters*num_rois])
         # get voxels 
-        voxels = self.voxel_head(roi_features) 
-        print(voxels.shape.as_list()) # [2, 24, 24, 24]
+        voxels = self.voxel_head(roi_features) # [2, 24, 24, 24]
         
         # get cubified mesh
         mesh = cubify(voxels=voxels, thresh=0.5)
         model_outputs.update(mesh)
 
         # mesh refinement stage
-        model_outputs.update(self.mesh_head(inputs=model_outputs)) #changed to update
+        model_outputs.update(self.mesh_head(inputs=model_outputs)) 
 
         return model_outputs
 
